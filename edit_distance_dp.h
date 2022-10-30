@@ -8,4 +8,4 @@ class EditDistanceDP {
   size_t Solve(const std::vector<int>& a, const std::vector<int>& b);
 };
 
-#endif  // EDIT_DISTANCE_DP_
+#endif  // namespace EDIT_DISTANCE_DP_

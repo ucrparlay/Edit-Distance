@@ -8,4 +8,4 @@ class EditDistanceSequential {
   size_t Solve(const std::vector<int>& a, const std::vector<int>& b);
 };
 
-#endif  // EDIT_DISTANCE_SEQUENTIAL_H_
+#endif  // namespace EDIT_DISTANCE_SEQUENTIAL_H_

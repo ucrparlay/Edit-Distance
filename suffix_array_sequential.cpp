@@ -1,16 +1,20 @@
 #include "suffix_array_sequential.h"
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <vector>
 
-void SuffixArraySequential::Prepare() {
+namespace {
+
+void Prepare(auto& a) {
   std::vector<int> b = a;
   std::sort(b.begin(), b.end());
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < a.size(); i++) {
     a[i] = lower_bound(b.begin(), b.end(), a[i]) - b.begin();
   }
 }
+
+}  // namespace
 
 void SuffixArraySequential::Resort(std::vector<std::array<int, 2>>& key) {
   for (int i = 0; i < n; i++) key[i][0]++, key[i][1]++;
@@ -28,10 +32,11 @@ void SuffixArraySequential::Resort(std::vector<std::array<int, 2>>& key) {
   }
 }
 
-void SuffixArraySequential::Build(const std::vector<int>& a_) {
+void SuffixArraySequential::Build(const std::string& a_) {
   n = a_.size();
-  a = a_;
-  Prepare();
+  a.resize(n);
+  for (int i = 0; i < n; i++) a[i] = a_[i];
+  Prepare(a);
   a.resize(n * 2, -1);
   sa.resize(n);
   rank.resize(n);

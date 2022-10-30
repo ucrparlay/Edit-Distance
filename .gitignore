@@ -1,0 +1,4 @@
+*.o
+edit_distance_test
+suffix_array_test
+temp.txt

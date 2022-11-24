@@ -11,6 +11,7 @@
 #include "parlay/primitives.h"
 #include "parlay/sequence.h"
 #include "parlay/internal/get_time.h"
+#include "longest_common_prefix.h"
 
 // **************************************************************
 // Suffix Array.
@@ -90,7 +91,7 @@ auto suffix_array(const char_range& S) {
       index l = segment.end - segment.start;
       auto p = parlay::tabulate(l, [&] (long i) {
         index k = sorted[s + i];
-        return std::pair{(k + offset >= n) ? 0 : ranks[k + offset], k};}, granularity);
+        return std::pair{(k + offset >= n) ? 0 : ranks[k + offset] + 1, k};}, granularity);
       parlay::sort_inplace(p);
       parlay::sequence<bool> flags(l);
       parlay::parallel_for(0, l, [&] (long i) {
@@ -104,7 +105,12 @@ auto suffix_array(const char_range& S) {
 
     offset = 2 * offset;
   }
-  return sorted;
+
+  auto height = lcp(S, sorted);
+  auto lcp = parlay::sequence<index>::uninitialized(n);
+  lcp[0] = 0;
+  parlay::copy(height, parlay::make_slice(lcp.begin() + 1, lcp.end()));
+  return std::make_tuple(ranks, sorted, lcp);
 }
 
 #endif  // namespace SUFFIX_ARRAY_PARALLEL_H_

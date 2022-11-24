@@ -1,11 +1,11 @@
 #ifndef EDIT_DISTANCE_SEQUENTIAL_H_
 #define EDIT_DISTANCE_SEQUENTIAL_H_
 
-#include <vector>
+#include <string>
 
 class EditDistanceSequential {
  public:
-  size_t Solve(const std::vector<int>& a, const std::vector<int>& b);
+  size_t Solve(const std::string& a, const std::string& b);
 };
 
 #endif  // namespace EDIT_DISTANCE_SEQUENTIAL_H_

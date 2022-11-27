@@ -10,7 +10,12 @@ CPPFLAGS = -std=c++17 -O3 -pthread -Wall -Wextra
 EDIT_DISTANCE = edit_distance.h edit_distance_sequential.h edit_distance_dp.h
 ALL = suffix_array_test edit_distance_test
 
+INCLUDE_DIR = parlaylib/examples/
+
 all : $(ALL)
+
+test_framework: test_framework.cpp
+	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@
 
 
 suffix_array_test : suffix_array_test.o suffix_array_sequential.o

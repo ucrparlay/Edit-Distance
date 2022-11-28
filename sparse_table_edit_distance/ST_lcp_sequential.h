@@ -1,10 +1,3 @@
-//
-//  lcp.h
-//  ed
-//
-//  Created by Alan on 11/27/22.
-//
-
 #ifndef lcp_h
 #define lcp_h
 

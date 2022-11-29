@@ -6,9 +6,9 @@
 
 #include <fstream>
 
-#include "minimum_edit_distance.h"
 #include "edit_distance_hashing.h"
-constexpr size_t NUM_TESTS = 1;
+#include "minimum_edit_distance.h"
+constexpr size_t NUM_TESTS = 2;
 size_t num_rounds = 10;
 
 template <typename T>
@@ -18,17 +18,20 @@ auto generate_strings(size_t n, size_t k, size_t alpha) {
   parlay::parallel_for(
       0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i) % alpha; });
 
+  // substitions, insertions, and deletions and roughly equally distributed
+  size_t _k = k / 3;
+
   // substitutions
-  parlay::parallel_for(0, k, [&](size_t i) {
+  parlay::parallel_for(0, _k, [&](size_t i) {
     size_t idx = parlay::hash32(i) % n;
     B[idx] = parlay::hash32(i + n) % alpha;
   });
 
   // insertions and deletions
   auto pred1 = parlay::delayed_seq<bool>(
-      n, [&](size_t i) { return parlay::hash32_2(i) % n >= k; });
+      n, [&](size_t i) { return parlay::hash32_2(i) % n >= _k; });
   auto pred2 = parlay::delayed_seq<bool>(
-      n, [&](size_t i) { return parlay::hash32_2(i + n) % n >= k; });
+      n, [&](size_t i) { return parlay::hash32_2(i + n) % n >= _k; });
   A = pack(A, pred1);
   B = pack(B, pred2);
   return std::make_tuple(A, B);
@@ -39,7 +42,7 @@ std::string test_name(int id) {
     case 0:
       return "parlay::edit_distance";
       break;
-    case 1: 
+    case 1:
       return "string_hashing_bfs";
       break;
     default:
@@ -59,7 +62,7 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
       case 0:
         num_edits = minimum_edit_distance(A, B);
         break;
-      case 1: 
+      case 1:
         num_edits = EditDistanceHashParallel(A, B);
         break;
       default:
@@ -123,9 +126,7 @@ int main(int argc, char *argv[]) {
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  // run_all(A, B, 0);
-  run_all(A, B, 0);
-  run_all(A, B, 1);
+  run_all(A, B);
 
   return 0;
 }

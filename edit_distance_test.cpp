@@ -7,6 +7,7 @@
 #include "edit_distance_parallel.h"
 #include "edit_distance_sequential.h"
 #include "parlay/internal/get_time.h"
+#include "utils.h"
 
 int main(int argc, char** argv) {
   srand(time(0));

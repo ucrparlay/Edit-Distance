@@ -5,7 +5,7 @@
 
 class EditDistanceParallel {
  public:
-  size_t Solve(const std::string& a, const std::string& b);
+  size_t Solve(const parlay::sequence<uint32_t>& a, const parlay::sequence<uint32_t>& b);
 };
 
 #endif // EDIT_DISTANCE_PARALLAL_H_

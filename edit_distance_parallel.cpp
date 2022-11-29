@@ -9,7 +9,7 @@
 #include "range_min.h"
 #include "suffix_array_parallel.h"
 
-size_t EditDistanceParallel::Solve(const std::string& a, const std::string& b) {
+size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a, const parlay::sequence<uint32_t>& b) {
   int n = a.size(), m = b.size();
   auto [rank, sa, lcp] = suffix_array(a + '@' + b);
   auto rmq = range_min(lcp);

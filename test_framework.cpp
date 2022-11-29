@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "minimum_edit_distance.h"
+#include "edit_distance_hashing.h"
 constexpr size_t NUM_TESTS = 1;
 size_t num_rounds = 10;
 
@@ -37,6 +38,10 @@ std::string test_name(int id) {
   switch (id) {
     case 0:
       return "parlay::edit_distance";
+      break;
+    case 1: 
+      return "string_hashing_bfs";
+      break;
     default:
       assert(0);
   }
@@ -53,6 +58,9 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     switch (id) {
       case 0:
         num_edits = minimum_edit_distance(A, B);
+        break;
+      case 1: 
+        num_edits = EditDistanceHashParallel(A, B);
         break;
       default:
         assert(0);
@@ -100,7 +108,7 @@ int main(int argc, char *argv[]) {
         "n: length of strings\n"
         "k: estimated number of edits\n"
         "alpha: alphabet size\n"
-        "rounsd: number of rounds");
+        "rounds: number of rounds");
     exit(0);
   }
   if (argc >= 2) {
@@ -115,7 +123,9 @@ int main(int argc, char *argv[]) {
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  run_all(A, B);
+  // run_all(A, B, 0);
+  run_all(A, B, 0);
+  run_all(A, B, 1);
 
   return 0;
 }

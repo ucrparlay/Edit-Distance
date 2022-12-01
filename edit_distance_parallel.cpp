@@ -3,15 +3,21 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 #include "parlay/sequence.h"
 #include "range_min.h"
 #include "suffix_array_parallel.h"
 
-size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a, const parlay::sequence<uint32_t>& b) {
+size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a,
+                                   const parlay::sequence<uint32_t>& b) {
   int n = a.size(), m = b.size();
-  auto [rank, sa, lcp] = suffix_array(a + '@' + b);
+  auto c = parlay::sequence<uint32_t>(n + m + 1);
+  parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
+  parlay::parallel_for(n + 1, n + m + 1, [&](int i) { c[i] = b[i]; });
+  c[n] = std::numeric_limits<uint32_t>::max();
+  auto [rank, sa, lcp] = suffix_array(c);
   auto rmq = range_min(lcp);
   auto GetLcp = [&](int i, int j) -> int {
     // std::cout << "GetLcp " << i << ' ' << j << '\n';

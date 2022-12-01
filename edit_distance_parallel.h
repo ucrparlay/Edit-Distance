@@ -2,6 +2,7 @@
 #define EDIT_DISTANCE_PARALLAL_H_
 
 #include <string>
+#include "parlay/sequence.h"
 
 class EditDistanceParallel {
  public:

@@ -7,8 +7,10 @@
 #include <fstream>
 
 #include "edit_distance_hashing.h"
-#include "minimum_edit_distance.h"
-constexpr size_t NUM_TESTS = 2;
+#include "edit_distance_dp.h"
+#include "edit_distance_parallel.h"
+
+constexpr size_t NUM_TESTS = 3;
 size_t num_rounds = 10;
 
 template <typename T>
@@ -40,10 +42,13 @@ auto generate_strings(size_t n, size_t k, size_t alpha) {
 std::string test_name(int id) {
   switch (id) {
     case 0:
-      return "parlay::edit_distance";
+      return "dp";
       break;
     case 1:
       return "string_hashing_bfs";
+      break;
+    case 2:
+      return "parallel bfs";
       break;
     default:
       assert(0);
@@ -60,10 +65,13 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     size_t num_edits;
     switch (id) {
       case 0:
-        num_edits = minimum_edit_distance(A, B);
+        num_edits = EditDistanceDP().Solve(A, B);
         break;
       case 1:
         num_edits = EditDistanceHashParallel(A, B);
+        break;
+      case 2:
+        num_edits = EditDistanceParallel().Solve(A, B);
         break;
       default:
         assert(0);

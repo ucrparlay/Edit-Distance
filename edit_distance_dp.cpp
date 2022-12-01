@@ -1,8 +1,10 @@
 #include "edit_distance_dp.h"
+
 #include <algorithm>
 #include <vector>
 
-size_t EditDistanceDP::Solve(const parlay::sequence<uint32_t> a, const parlay::sequence<uint32_t> b) {
+size_t EditDistanceDP::Solve(const parlay::sequence<uint32_t>& a,
+                             const parlay::sequence<uint32_t>& b) {
   int n = a.size(), m = b.size();
   std::vector<std::vector<int>> f(n + 1, std::vector<int>(m + 1, n + m));
   f[n][m] = 0;

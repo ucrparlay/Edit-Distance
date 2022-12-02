@@ -11,6 +11,7 @@
 *.sh
 *.dat
 *.swp
+*.tsv
 
 # Prerequisites
 *.d

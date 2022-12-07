@@ -7,7 +7,15 @@ template <typename T>
 size_t EditDistanceDP<T>::Solve(const parlay::sequence<T>& a,
                                 const parlay::sequence<T>& b) {
   size_t n = a.size(), m = b.size();
-  std::vector<std::vector<uint32_t>> dp(n + 1, std::vector<uint32_t>(m + 1, 0));
+  constexpr uint32_t MAX_VAL = std::numeric_limits<uint32_t>::max() / 2;
+  std::vector<std::vector<uint32_t>> dp(n + 1,
+                                        std::vector<uint32_t>(m + 1, MAX_VAL));
+  for (int i = 0; i < n; i++) {
+    dp[i][0] = i;
+  }
+  for (int j = 0; j < m; j++) {
+    dp[0][j] = j;
+  }
   for (size_t i = 1; i <= n; i++) {
     for (size_t j = 1; j <= m; j++) {
       if (a[i - 1] == b[j - 1]) {

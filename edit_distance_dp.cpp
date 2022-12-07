@@ -3,27 +3,21 @@
 #include <algorithm>
 #include <vector>
 
-size_t EditDistanceDP::Solve(const parlay::sequence<uint32_t>& a,
-                             const parlay::sequence<uint32_t>& b) {
-  int n = a.size(), m = b.size();
-  std::vector<std::vector<int>> f(n + 1, std::vector<int>(m + 1, n + m));
-  f[n][m] = 0;
-  for (int i = n; i >= 0; i--) {
-    for (int j = m; j >= 0; j--) {
-      if (i < n) {
-        f[i][j] = std::min(f[i][j], f[i + 1][j] + 1);
-      }
-      if (j < m) {
-        f[i][j] = std::min(f[i][j], f[i][j + 1] + 1);
-      }
-      if (i < n && j < m) {
-        if (a[i] == b[j]) {
-          f[i][j] = std::min(f[i][j], f[i + 1][j + 1]);
-        } else {
-          f[i][j] = std::min(f[i][j], f[i + 1][j + 1] + 1);
-        }
+template <typename T>
+size_t EditDistanceDP<T>::Solve(const parlay::sequence<T>& a,
+                                const parlay::sequence<T>& b) {
+  size_t n = a.size(), m = b.size();
+  std::vector<std::vector<uint32_t>> dp(n + 1, std::vector<uint32_t>(m + 1, 0));
+  for (size_t i = 1; i <= n; i++) {
+    for (size_t j = 1; j <= m; j++) {
+      if (a[i - 1] == b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = std::min(dp[i - 1][j], dp[i][j - 1]) + 1;
       }
     }
   }
-  return f[0][0];
+  return dp[n][m];
 }
+
+template class EditDistanceDP<uint32_t>;

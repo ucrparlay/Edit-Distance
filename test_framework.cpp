@@ -6,12 +6,13 @@
 
 #include <fstream>
 
-#include "edit_distance_hashing.h"
 #include "edit_distance_dp.h"
+#include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
+#include "parlaylib/examples/minimum_edit_distance.h"
 
-constexpr size_t NUM_TESTS = 3;
-size_t num_rounds = 10;
+constexpr size_t NUM_TESTS = 4;
+size_t num_rounds = 3;
 
 template <typename T>
 auto generate_strings(size_t n, size_t k, size_t alpha) {
@@ -50,6 +51,9 @@ std::string test_name(int id) {
     case 2:
       return "parallel bfs";
       break;
+    case 3:
+      return "parlay::edit_distance";
+      break;
     default:
       assert(0);
   }
@@ -65,13 +69,16 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     size_t num_edits;
     switch (id) {
       case 0:
-        num_edits = EditDistanceDP().Solve(A, B);
+        num_edits = EditDistanceDP<T>().Solve(A, B);
         break;
       case 1:
         num_edits = EditDistanceHashParallel(A, B);
         break;
       case 2:
         num_edits = EditDistanceParallel().Solve(A, B);
+        break;
+      case 3:
+        num_edits = minimum_edit_distance(A, B);
         break;
       default:
         assert(0);

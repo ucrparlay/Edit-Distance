@@ -6,12 +6,13 @@
 
 #include <fstream>
 
+#include "dac_mm.h"
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
 #include "parlaylib/examples/minimum_edit_distance.h"
 
-constexpr size_t NUM_TESTS = 4;
+constexpr size_t NUM_TESTS = 5;
 size_t num_rounds = 3;
 
 template <typename T>
@@ -54,6 +55,9 @@ std::string test_name(int id) {
     case 3:
       return "parlay::edit_distance";
       break;
+    case 4:
+      return "dac_mm";
+      break;
     default:
       assert(0);
   }
@@ -79,6 +83,9 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         break;
       case 3:
         num_edits = minimum_edit_distance(A, B);
+        break;
+      case 4:
+        num_edits = DAC_MM<uint32_t>(A, B).solve();
         break;
       default:
         assert(0);

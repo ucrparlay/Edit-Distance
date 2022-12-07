@@ -14,8 +14,8 @@ INCLUDE_DIR = parlaylib/examples/
 
 all : $(ALL)
 
-test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o
-	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o
+test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o dac_mm.o
+	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o dac_mm.o
 
 
 suffix_array_test : suffix_array_test.o suffix_array_sequential.o
@@ -39,6 +39,8 @@ edit_distance_sequential.o: edit_distance_sequential.h edit_distance_sequential.
 edit_distance_parallel.o: edit_distance_parallel.h edit_distance_parallel.cpp
 	$(CC) $(CPPFLAGS) -c edit_distance_parallel.cpp
 
+dac_mm.o: dac_mm.h dac_mm.cpp
+	$(CC) $(CPPFLAGS) -c dac_mm.cpp
 
 clean :
 	rm -f *.o $(ALL)

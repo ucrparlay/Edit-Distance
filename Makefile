@@ -5,7 +5,31 @@ else
 CC = g++
 endif
 
-CPPFLAGS = -std=c++17 -O3 -pthread -Wall -Wextra
+CPPFLAGS = -std=c++17 -O3 -Wall -Wextra
+
+ifdef CILKPLUS
+CPPFLAGS += -DPARLAY_CILKPLUS -DCILK -fcilkplus
+else ifdef OPENCILK
+CPPFLAGS += -DPARLAY_OPENCILK -DCILK -fopencilk
+else ifdef SERIAL
+CPPFLAGS += -DPARLAY_SEQUENTIAL
+else
+CPPFLAGS += -pthread
+endif
+
+ifdef DEBUG
+CPPFLAGS += -Og -mcx16 -DDEBUG
+else ifdef PERF
+CPPFLAGS += -Og -mcx16 -march=native -g
+else ifdef MEMCHECK
+CPPFLAGS += -Og -mcx16 -DPARLAY_SEQUENTIAL
+else
+CPPFLAGS += -O3 -mcx16 -march=native
+endif
+
+ifdef STDALLOC
+CPPFLAGS += -DPARLAY_USE_STD_ALLOC
+endif
 
 EDIT_DISTANCE = edit_distance.h edit_distance_sequential.h edit_distance_dp.h
 ALL = suffix_array_test test_framework

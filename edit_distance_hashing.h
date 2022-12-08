@@ -1,6 +1,5 @@
 #include "hash_lcp_parallel.h"
 
-
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
 template <typename Seq>

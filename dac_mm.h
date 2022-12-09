@@ -4,7 +4,7 @@
 
 using namespace parlay;
 
-template <typename T>
+template <typename T, typename s_size_t = uint32_t>
 class DAC_MM {
   const sequence<T> &A;
   const sequence<T> &B;

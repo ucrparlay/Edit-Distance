@@ -12,33 +12,100 @@ class DAC_MM {
 
   DAC_MM(const sequence<T> &_A, const sequence<T> &_B) : A(_A), B(_B) {}
 
+  size_t get_pow2(size_t x) {
+    size_t ret = 1;
+    while ((ret << 1) < x) {
+      ret <<= 1;
+    }
+    return ret;
+  }
+
   sequence<sequence<s_size_t>> merge_horizontal(
       sequence<sequence<s_size_t>> &left, sequence<sequence<s_size_t>> &right,
       size_t k) {
     size_t n1 = left.size(), n2 = right.size();
     size_t n = n1 + n2 - k - 1;
     sequence<sequence<s_size_t>> ret(n, sequence<s_size_t>(n, MAX_VAL));
-    parallel_for(0, n1, [&](size_t i) {
-      parallel_for(0, n1 - k, [&](size_t j) { ret[i][j] = left[i][j]; });
-    });
-    parallel_for(0, n2 - k, [&](size_t i) {
-      parallel_for(0, n2, [&](size_t j) {
+    for (size_t i = 0; i < n1; i++) {
+      for (size_t j = 0; j < n1 - k; j++) {
+        ret[i][j] = left[i][j];
+      }
+    }
+    for (size_t i = 0; i < n2 - k; i++) {
+      for (size_t j = 0; j < n2; j++) {
         ret[n1 - 1 + i][n1 - k - 1 + j] = right[k + i][j];
-      });
-    });
+      }
+    }
 
-    parallel_for(0, n1, [&](size_t i) {
-      parallel_for(0, n2, [&](size_t j) {
-        ret[i][n1 - k - 1 + j] = reduce(
-            delayed_seq<s_size_t>(k + 1,
-                                  [&](size_t o) {
-                                    return std::min(
-                                        MAX_VAL,
-                                        left[i][n1 - k - 1 + o] + right[o][j]);
-                                  }),
-            minm<s_size_t>());
-      });
-    });
+    sequence<sequence<s_size_t>> theta(n1, sequence<s_size_t>(n2, MAX_VAL));
+    auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
+      if (i + k < j) {
+        return;
+      }
+      if (l == MAX_VAL) {
+        l = 0;
+      }
+      if (r == MAX_VAL) {
+        r = k;
+      }
+      s_size_t mn_v = MAX_VAL;
+      s_size_t mn_p = MAX_VAL;
+      for (size_t o = l; o <= r; o++) {
+        s_size_t sum = left[i][n1 - k - 1 + o] + right[o][j];
+        if (sum < mn_v) {
+          mn_v = sum;
+          mn_p = o;
+        }
+      }
+      ret[i][n1 - k - 1 + j] = mn_v;
+      theta[i][j] = mn_p;
+    };
+    auto compute_odd_even = [&](size_t p, size_t q) {
+      for (size_t i = p; i < n1; i += p * 2) {
+        for (size_t j = 0; j < n2; j += q * 2) {
+          size_t s = theta[i - p][j];
+          size_t t = i + p >= n1 ? k : theta[i + p][j];
+          compute(i, j, s, t);
+        }
+      }
+    };
+    auto compute_even_odd = [&](size_t p, size_t q) {
+      for (size_t i = 0; i < n1; i += p * 2) {
+        for (size_t j = q; j < n2; j += q * 2) {
+          size_t s = theta[i][j - q];
+          size_t t = j + q >= n2 ? k : theta[i][j + q];
+          compute(i, j, s, t);
+        }
+      }
+    };
+    auto compute_odd_odd = [&](size_t p, size_t q) {
+      for (size_t i = p; i < n1; i += p * 2) {
+        for (size_t j = q; j < n2; j += q * 2) {
+          size_t s = theta[i][j - q];
+          size_t t = j + q >= n2 ? k : theta[i][j + q];
+          compute(i, j, s, t);
+        }
+      }
+    };
+    size_t p = get_pow2(n1), q = get_pow2(n2);
+    compute(0, 0, 0, k);
+    while (p && q) {
+      compute_odd_even(p, q);
+      compute_even_odd(p, q);
+      compute_odd_odd(p, q);
+      p >>= 1;
+      q >>= 1;
+    }
+    while (p) {
+      compute_odd_even(p, 1);
+      compute_odd_odd(p, 1);
+      p >>= 1;
+    }
+    while (q) {
+      compute_even_odd(1, q);
+      compute_odd_odd(1, q);
+      q >>= 1;
+    }
     return ret;
   }
 
@@ -48,41 +115,90 @@ class DAC_MM {
     size_t n1 = up.size(), n2 = down.size();
     size_t n = n1 + n2 - k - 1;
     sequence<sequence<s_size_t>> ret(n, sequence<s_size_t>(n, MAX_VAL));
-    parallel_for(0, n1, [&](size_t i) {
-      parallel_for(0, n1 - k, [&](size_t j) {
+    for (size_t i = 0; i < n1; i++) {
+      for (size_t j = 0; j < n1 - k; j++) {
         ret[n2 - k - 1 + i][n2 - 1 + j] = up[i][k + j];
-      });
-    });
-    parallel_for(0, n2 - k, [&](size_t i) {
-      parallel_for(0, n2, [&](size_t j) { ret[i][j] = down[i][j]; });
-    });
-    parallel_for(0, n1, [&](size_t i) {
-      parallel_for(0, n2, [&](size_t j) {
-        ret[n2 - k - 1 + i][j] = reduce(
-            delayed_seq<s_size_t>(
-                k + 1,
-                [&](size_t o) {
-                  return std::min(MAX_VAL, up[i][o] + down[n2 - k - 1 + o][j]);
-                }),
-            minm<s_size_t>());
-      });
-    });
+      }
+    }
+    for (size_t i = 0; i < n2 - k; i++) {
+      for (size_t j = 0; j < n2; j++) {
+        ret[i][j] = down[i][j];
+      }
+    }
+
+    sequence<sequence<s_size_t>> theta(n1, sequence<s_size_t>(n2, MAX_VAL));
+    auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
+      if (i > j + (n1 - k - 1)) {
+        return;
+      }
+      if (l == MAX_VAL) {
+        l = 0;
+      }
+      if (r == MAX_VAL) {
+        r = k;
+      }
+      s_size_t mn_v = MAX_VAL;
+      s_size_t mn_p = MAX_VAL;
+      for (size_t o = l; o <= r; o++) {
+        s_size_t sum = up[i][o] + down[n2 - k - 1 + o][j];
+        if (sum < mn_v) {
+          mn_v = sum;
+          mn_p = o;
+        }
+      }
+      ret[n2 - k - 1 + i][j] = mn_v;
+      theta[i][j] = mn_p;
+    };
+    auto compute_odd_even = [&](size_t p, size_t q) {
+      for (size_t i = p; i < n1; i += p * 2) {
+        for (size_t j = 0; j < n2; j += q * 2) {
+          size_t s = theta[i - p][j];
+          size_t t = i + p >= n1 ? k : theta[i + p][j];
+          compute(i, j, s, t);
+        }
+      }
+    };
+    auto compute_even_odd = [&](size_t p, size_t q) {
+      for (size_t i = 0; i < n1; i += p * 2) {
+        for (size_t j = q; j < n2; j += q * 2) {
+          size_t s = theta[i][j - q];
+          size_t t = j + q >= n2 ? k : theta[i][j + q];
+          compute(i, j, s, t);
+        }
+      }
+    };
+    auto compute_odd_odd = [&](size_t p, size_t q) {
+      for (size_t i = p; i < n1; i += p * 2) {
+        for (size_t j = q; j < n2; j += q * 2) {
+          size_t s = theta[i][j - q];
+          size_t t = j + q >= n2 ? k : theta[i][j + q];
+          compute(i, j, s, t);
+        }
+      }
+    };
+    size_t p = get_pow2(n1), q = get_pow2(n2);
+    compute(0, 0, 0, k);
+    while (p && q) {
+      compute_odd_even(p, q);
+      compute_even_odd(p, q);
+      compute_odd_odd(p, q);
+      p >>= 1;
+      q >>= 1;
+    }
+    while (p) {
+      compute_odd_even(p, 1);
+      compute_odd_odd(p, 1);
+      p >>= 1;
+    }
+    while (q) {
+      compute_even_odd(1, q);
+      compute_odd_odd(1, q);
+      q >>= 1;
+    }
     return ret;
   }
 
-  void print_matrix(size_t i, size_t n, size_t j, size_t m,
-                    sequence<sequence<s_size_t>> &ret) {
-    printf("i: %zu, n: %zu, j: %zu, m: %zu\n", i, n, j, m);
-    for (size_t o = 0; o < ret.size(); o++) {
-      for (size_t oo = 0; oo < ret[o].size(); oo++) {
-        printf("%10u%c", ret[o][oo], " \n"[oo + 1 == ret[o].size()]);
-      }
-    }
-    puts("");
-  }
-
   sequence<sequence<s_size_t>> solve_r(size_t i, size_t n, size_t j, size_t m) {
-    // printf("n: %zu, m: %zu\n", n, m);
     size_t n1 = n / 2, n2 = n - n1;
     size_t m1 = m / 2, m2 = m - m1;
     if (n == 1 && m == 1) {
@@ -91,41 +207,31 @@ class DAC_MM {
       ret[0][0] = ret[2][2] = 0;
       ret[0][1] = ret[1][0] = ret[1][2] = ret[2][1] = 1;
       ret[1][1] = (A[i] != B[j]);
-      // print_matrix(i, n, j, m, ret);
       return ret;
     } else if (n == 1) {
       sequence<sequence<s_size_t>> v1, v2;
-      par_do([&]() { v1 = solve_r(i, n, j, m1); },
-             [&]() { v2 = solve_r(i, n, j + m1, m2); });
+      v1 = solve_r(i, n, j, m1);
+      v2 = solve_r(i, n, j + m1, m2);
       auto ret = merge_horizontal(v1, v2, n);
-      // print_matrix(i, n, j, m, ret);
       return ret;
     } else if (m == 1) {
       sequence<sequence<s_size_t>> v1, v2;
-      par_do([&]() { v1 = solve_r(i, n1, j, m); },
-             [&]() { v2 = solve_r(i + n1, n2, j, m); });
+      v1 = solve_r(i, n1, j, m);
+      v2 = solve_r(i + n1, n2, j, m);
       auto ret = merge_vertical(v1, v2, m);
-      // print_matrix(i, n, j, m, ret);
       return ret;
     } else {
       sequence<sequence<s_size_t>> t1, t2, t3, t4;
-      par_do(
-          [&]() {
-            par_do([&]() { t1 = solve_r(i, n1, j, m1); },
-                   [&]() { t2 = solve_r(i + n1, n2, j, m1); });
-          },
-          [&]() {
-            par_do([&]() { t3 = solve_r(i, n1, j + m1, m2); },
-                   [&]() { t4 = solve_r(i + n1, n2, j + m1, m2); });
-          });
+      t1 = solve_r(i, n1, j, m1);
+      t2 = solve_r(i + n1, n2, j, m1);
+      t3 = solve_r(i, n1, j + m1, m2);
+      t4 = solve_r(i + n1, n2, j + m1, m2);
 
       sequence<sequence<s_size_t>> v1, v2;
-      par_do([&]() { v1 = merge_vertical(t1, t2, m1); },
-             [&]() { v2 = merge_vertical(t3, t4, m2); });
-      // print_matrix(i, n, j, m1, v1);
-      // print_matrix(i, n, j + m1, m2, v2);
+      v1 = merge_vertical(t1, t2, m1);
+      v2 = merge_vertical(t3, t4, m2);
+
       auto ret = merge_horizontal(v1, v2, n);
-      // print_matrix(i, n, j, m, ret);
       return ret;
     }
   }

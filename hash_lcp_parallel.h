@@ -65,19 +65,23 @@ void build_hash_table(const parlay::sequence<T> &s1,
   for (int i = 1; i < table1_d1; i++) {
     table_s1[i].resize(table1_d2 - logN1[i] + 2);
     parlay::parallel_for(0, table1_d2 - logN1[i] + 1, [&](int j) {
-      for (int pw = 0; pw < logN1[i - 1]; pw++) {
-        table_s1[i][j] = table_s1[i - 1][j] * PRIME_BASE;
-      }
-      table_s1[i][j] += table_s1[i - 1][j + logN1[i - 1]];
+      // for (int pw = 0; pw < logN1[i - 1]; pw++) {
+      //   table_s1[i][j] = table_s1[i - 1][j] * PRIME_BASE;
+      // }
+      // table_s1[i][j] += table_s1[i - 1][j + logN1[i - 1]];
+      table_s1[i][j] = table_s1[i - 1][j + logN1[i - 1]] +
+                       table_s1[i - 1][j] * powerN1[i - 1];
     });
   }
   for (int i = 1; i < table2_d1; i++) {
     table_s2[i].resize(table2_d2 - logN2[i] + 2);
     parlay::parallel_for(0, table2_d2 - logN2[i] + 1, [&](int j) {
-      for (int pw = 0; pw < logN2[i - 1]; pw++) {
-        table_s2[i][j] = table_s2[i - 1][j] * PRIME_BASE;
-      }
-      table_s2[i][j] += table_s2[i - 1][j + logN2[i - 1]];
+      // for (int pw = 0; pw < logN2[i - 1]; pw++) {
+      //   table_s2[i][j] = table_s2[i - 1][j] * PRIME_BASE;
+      // }
+      // table_s2[i][j] += table_s2[i - 1][j + logN2[i - 1]];
+      table_s2[i][j] = table_s2[i - 1][j + logN2[i - 1]] +
+                       table_s2[i - 1][j] * powerN2[i - 1];
     });
   }
 }

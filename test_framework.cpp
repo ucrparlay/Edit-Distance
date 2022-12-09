@@ -66,7 +66,7 @@ std::string test_name(int id) {
 template <typename T>
 double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
             int id) {
-  std::cout << "Test name: " << test_name(id) << std::endl;
+  std::cout << "\nTest name: " << test_name(id) << std::endl;
   double total_time = 0;
   for (size_t i = 0; i <= num_rounds; i++) {
     parlay::internal::timer t;

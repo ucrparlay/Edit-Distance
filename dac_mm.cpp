@@ -47,9 +47,6 @@ class DAC_MM {
   const sequence<T> &A;
   const sequence<T> &B;
 
-  sequence<sequence<s_size_t>> dist;
-  sequence<sequence<s_size_t>> g_theta;
-
   DAC_MM(const sequence<T> &_A, const sequence<T> &_B) : A(_A), B(_B) {}
 
   size_t get_pow2(size_t x) {
@@ -60,7 +57,7 @@ class DAC_MM {
     return ret;
   }
 
-  void merge_horizontal(Matrix left, Matrix right, Matrix ret, Matrix theta,
+  void merge_horizontal(Matrix left, Matrix right, Matrix ret, Matrix theta2,
                         size_t n1, size_t n2, size_t k) {
     // for (size_t i = 0; i < n1 + n2 - k - 1; i++) {
     // for (size_t j = 0; j < n1 + n2 - k - 1; j++) {
@@ -83,10 +80,20 @@ class DAC_MM {
       }
     }
 
+    sequence<sequence<s_size_t>> theta(n1, sequence<s_size_t>(n2, MAX_VAL));
+
     auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
-      if (i + k < j) {
+      // if (n1 == 5 && n2 == 4 && k == 2 && i == 2 && j == 3) {
+      // printf("heyyyyyyyyyy\n");
+      //}
+      if (i + (n2 - k - 1) < j) {
         ret[i][n1 - k - 1 + j] = MAX_VAL;
         theta[i][j] = MAX_VAL;
+        // if (n1 == 3 && n2 == 3 && k == 1) {
+        // printf("Case 1: i: %zu, j: %zu, l: %zu, r: %zu\n", i, j, l, r);
+        // printf("ret[%zu][%zu]: %u\n", i, n1 - k - 1 + j,
+        // ret[i][n1 - k - 1 + j]);
+        //}
         return;
       }
       if (l == MAX_VAL) {
@@ -99,6 +106,10 @@ class DAC_MM {
       s_size_t mn_p = MAX_VAL;
       for (size_t o = l; o <= r; o++) {
         s_size_t sum = left[i][n1 - k - 1 + o] + right[o][j];
+        // if (n1 == 4 && n2 == 4 && k == 2 && i == 2 && j == 3) {
+        // printf("left[%zu][%zu]: %u, right[%zu][%zu]: %u\n", i, n1 - k - 1 +
+        // o, left[i][n1 - k - 1 + o], o, j, right[o][j]);
+        //}
         if (sum < mn_v) {
           mn_v = sum;
           mn_p = o;
@@ -106,6 +117,11 @@ class DAC_MM {
       }
       ret[i][n1 - k - 1 + j] = mn_v;
       theta[i][j] = mn_p;
+      // if (n1 == 3 && n2 == 3 && k == 2) {
+      // printf("Case 2: i: %zu, j: %zu, l: %zu, r: %zu\n", i, j, l, r);
+      // printf("ret[%zu][%zu]: %u\n", i, n1 - k - 1 + j,
+      // ret[i][n1 - k - 1 + j]);
+      //}
     };
     auto compute_odd_even = [&](size_t p, size_t q) {
       for (size_t i = p; i < n1; i += p * 2) {
@@ -156,7 +172,7 @@ class DAC_MM {
     }
   }
 
-  void merge_vertical(Matrix up, Matrix down, Matrix ret, Matrix theta,
+  void merge_vertical(Matrix up, Matrix down, Matrix ret, Matrix theta2,
                       size_t n1, size_t n2, size_t k) {
     // for (size_t i = 0; i < n1 + n2 - k - 1; i++) {
     // for (size_t j = 0; j < n1 + n2 - k - 1; j++) {
@@ -179,6 +195,7 @@ class DAC_MM {
       }
     }
 
+    sequence<sequence<s_size_t>> theta(n1, sequence<s_size_t>(n2, MAX_VAL));
     auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
       if (i > j + (n1 - k - 1)) {
         ret[n2 - k - 1 + i][j] = MAX_VAL;
@@ -252,20 +269,23 @@ class DAC_MM {
     }
   }
 
-  void solve_r(size_t i, size_t n, size_t j, size_t m, size_t r, size_t c) {
+  void solve_r(size_t i, size_t n, size_t j, size_t m, size_t r, size_t c,
+               sequence<sequence<s_size_t>> &dist,
+               const sequence<sequence<pair<size_t, size_t>>> &dp) {
     size_t n1 = (n + 1) / 2, n2 = n - n1;
     size_t m1 = (m + 1) / 2, m2 = m - m1;
+    sequence<sequence<s_size_t>> g_theta;
     Matrix ret(dist, r, c);
-    Matrix theta(g_theta, r, c);
+    Matrix theta(g_theta, 0, 0);
     if (n == 1 && m == 1) {
       ret[0][0] = ret[2][2] = 0;
       ret[0][1] = ret[1][0] = ret[1][2] = ret[2][1] = 1;
       ret[1][1] = (A[i] != B[j]);
     } else if (n == 1) {
       auto left = Matrix(ret, 0, 0);
-      auto right = Matrix(ret, 0, m1 * 3);
-      solve_r(i, n, j, m1, r, c);
-      solve_r(i, n, j + m1, m2, r, c + m1 * 3);
+      auto right = Matrix(ret, 0, dp[n][m1].second);
+      solve_r(i, n, j, m1, r, c, dist, dp);
+      solve_r(i, n, j + m1, m2, r, c + dp[n][m1].second, dist, dp);
       sequence<sequence<s_size_t>> tmp2(n + m + 1,
                                         sequence<s_size_t>(n + m + 1, MAX_VAL));
       merge_horizontal(left, right, Matrix(tmp2, 0, 0), theta, n + m1 + 1,
@@ -277,9 +297,9 @@ class DAC_MM {
       }
     } else if (m == 1) {
       auto up = Matrix(ret, 0, 0);
-      auto down = Matrix(ret, n1 * 3, 0);
-      solve_r(i, n1, j, m, r, c);
-      solve_r(i + n1, n2, j, m, r + n1 * 3, c);
+      auto down = Matrix(ret, dp[n1][m].first, 0);
+      solve_r(i, n1, j, m, r, c, dist, dp);
+      solve_r(i + n1, n2, j, m, r + dp[n1][m].first, c, dist, dp);
       sequence<sequence<s_size_t>> tmp2(n + m + 1,
                                         sequence<s_size_t>(n + m + 1, MAX_VAL));
       merge_vertical(up, down, Matrix(tmp2, 0, 0), theta, n1 + m + 1,
@@ -290,18 +310,20 @@ class DAC_MM {
         }
       }
     } else {
-      size_t N = max(n1, m1) * 3;
+      // size_t N = max(n1, m1) * 3;
+      size_t len1 = dp[n1][m1].first;
+      size_t len2 = dp[n1][m1].second;
       // printf("N: %zu\n", N);
       auto upper_left = Matrix(ret, 0, 0);
-      auto bottom_left = Matrix(ret, N, 0);
-      auto upper_right = Matrix(ret, 0, N);
-      auto bottom_right = Matrix(ret, N, N);
-      solve_r(i, n1, j, m1, r, c);
-      solve_r(i + n1, n2, j, m1, r + N, c);
+      auto bottom_left = Matrix(ret, len1, 0);
+      auto upper_right = Matrix(ret, 0, len2);
+      auto bottom_right = Matrix(ret, len1, len2);
+      solve_r(i, n1, j, m1, r, c, dist, dp);
+      solve_r(i + n1, n2, j, m1, r + len1, c, dist, dp);
       // printf("here, i: %zu, n: %zu, j: %zu, m: %zu, r: %zu, c: %zu\n", i, n1,
       // j + m1, m2, r, c + N);
-      solve_r(i, n1, j + m1, m2, r, c + N);
-      solve_r(i + n1, n2, j + m1, m2, r + N, c + N);
+      solve_r(i, n1, j + m1, m2, r, c + len2, dist, dp);
+      solve_r(i + n1, n2, j + m1, m2, r + len1, c + len2, dist, dp);
 
       sequence<sequence<s_size_t>> tmp2(
           n + m1 + 1, sequence<s_size_t>(n + m1 + 1, MAX_VAL));
@@ -318,7 +340,7 @@ class DAC_MM {
       // puts("");
 
       merge_vertical(upper_right, bottom_right, Matrix(tmp3, 0, 0),
-                     Matrix(theta, 0, N), n1 + m2 + 1, n2 + m2 + 1, m2);
+                     Matrix(theta, 0, len2), n1 + m2 + 1, n2 + m2 + 1, m2);
       // printf("i: %zu, n: %zu, j: %zu, m: %zu\n", i, n, j + m1, m2);
       // for (size_t x = 0; x < n + m2 + 1; x++) {
       // for (size_t y = 0; y < n + m2 + 1; y++) {
@@ -331,7 +353,6 @@ class DAC_MM {
     }
     // printf("i: %zu n: %zu, j: %zu m: %zu, r: %zu, c: %zu, use %zu by %zu\n",
     // i, n, j, m, r, c, n + m + 1, n + m + 1);
-    // printf("i: %zu, n: %zu, j: %zu, m: %zu\n", i, n, j, m);
     // for (size_t x = 0; x < n + m + 1; x++) {
     // for (size_t y = 0; y < n + m + 1; y++) {
     // printf("%10u%c", ret[x][y], " \n"[y == n + m]);
@@ -342,12 +363,48 @@ class DAC_MM {
 
   size_t solve() {
     size_t n = A.size(), m = B.size();
-    size_t N = static_cast<size_t>(1) << log2_up(max(n, m));
-    dist =
-        sequence<sequence<s_size_t>>(N * 3, sequence<s_size_t>(N * 3, MAX_VAL));
-    g_theta = sequence<sequence<s_size_t>>(
-        N * 3, sequence<s_size_t>::uninitialized(N * 3));
-    solve_r(0, n, 0, m, 0, 0);
+    if (n == 0) {
+      return m;
+    } else if (m == 0) {
+      return n;
+    }
+
+    // DP for matrix size
+    auto dp = sequence<sequence<pair<size_t, size_t>>>(
+        n + 1, sequence<pair<size_t, size_t>>(m + 1));
+    for (size_t i = 1; i <= n; i++) {
+      for (size_t j = 1; j <= m; j++) {
+        if (i == 1 && j == 1) {
+          dp[i][j] = make_pair(3, 3);
+        } else if (i == 1) {
+          auto [n1, m1] = dp[i][(j + 1) / 2];
+          auto [n2, m2] = dp[i][j / 2];
+          dp[i][j] = make_pair(max(n1, n2), m1 + m2);
+        } else if (j == 1) {
+          auto [n1, m1] = dp[(i + 1) / 2][j];
+          auto [n2, m2] = dp[i / 2][j];
+          dp[i][j] = make_pair(n1 + n2, max(m1, m2));
+        } else {
+          auto [n1, m1] = dp[(i + 1) / 2][(j + 1) / 2];
+          auto [n2, m2] = dp[i / 2][(j + 1) / 2];
+          auto [n3, m3] = dp[(i + 1) / 2][j / 2];
+          auto [n4, m4] = dp[i / 2][j / 2];
+          dp[i][j] =
+              make_pair(max(n1, n3) + max(n2, n4), max(m1, m2) + max(m3, m4));
+        }
+        dp[i][j].first = max(dp[i][j].first, i + j + 1);
+        dp[i][j].second = max(dp[i][j].second, i + j + 1);
+      }
+    }
+
+    size_t N1 = dp[n][m].first;
+    size_t N2 = dp[n][m].second;
+    //printf("Allocate %zu by %zu\n", N1, N2);
+    auto dist =
+        sequence<sequence<s_size_t>>(N1, sequence<s_size_t>(N2, MAX_VAL));
+    // g_theta = sequence<sequence<s_size_t>>(
+    // N1 * 100, sequence<s_size_t>::uninitialized(N2 * 100));
+    solve_r(0, n, 0, m, 0, 0, dist, dp);
     return dist[n][m];
   }
 };

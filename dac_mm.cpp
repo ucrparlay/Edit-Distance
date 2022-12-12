@@ -83,44 +83,52 @@ class DAC_MM {
       if (r == MAX_VAL) {
         r = k;
       }
-      s_size_t mn_v = MAX_VAL;
-      s_size_t mn_p = MAX_VAL;
-      for (size_t o = l; o <= r; o++) {
-        s_size_t sum = left[i][n1 - k - 1 + o] + right[o][j];
-        if (sum < mn_v) {
-          mn_v = sum;
-          mn_p = o;
+      auto get_val = [&](s_size_t o) {
+        if (left[i][n1 - k - 1 + o] != MAX_VAL && right[o][j] != MAX_VAL) {
+          return left[i][n1 - k - 1 + o] + right[o][j];
         }
-      }
-      ret[i][n1 - k - 1 + j] = mn_v;
+        return MAX_VAL;
+      };
+      auto perm =
+          delayed_seq<s_size_t>(r - l + 1, [&](size_t id) { return id + l; });
+      s_size_t mn_p = *min_element(perm, [&](s_size_t a, s_size_t b) {
+        return get_val(a) < get_val(b);
+      });
+      ret[i][n1 - k - 1 + j] = get_val(mn_p);
       theta[i][j] = mn_p;
     };
     auto compute_odd_even = [&](size_t p, size_t q) {
-      for (size_t i = p; i < n1; i += p * 2) {
-        for (size_t j = 0; j < n2; j += q * 2) {
-          size_t s = theta[i - p][j];
-          size_t t = i + p >= n1 ? k : theta[i + p][j];
-          compute(i, j, s, t);
-        }
-      }
+      parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
+        parallel_for(0, (n2 - 1) / (q * 2) + 1, [&](size_t j) {
+          size_t x = p * (2 * i + 1);
+          size_t y = q * (2 * j);
+          size_t s = theta[x - p][y];
+          size_t t = x + p >= n1 ? k : theta[x + p][y];
+          compute(x, y, s, t);
+        });
+      });
     };
     auto compute_even_odd = [&](size_t p, size_t q) {
-      for (size_t i = 0; i < n1; i += p * 2) {
-        for (size_t j = q; j < n2; j += q * 2) {
-          size_t s = theta[i][j - q];
-          size_t t = j + q >= n2 ? k : theta[i][j + q];
-          compute(i, j, s, t);
-        }
-      }
+      parallel_for(0, (n1 - 1) / (p * 2) + 1, [&](size_t i) {
+        parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
+          size_t x = p * (2 * i);
+          size_t y = q * (2 * j + 1);
+          size_t s = theta[x][y - q];
+          size_t t = y + q >= n2 ? k : theta[x][y + q];
+          compute(x, y, s, t);
+        });
+      });
     };
     auto compute_odd_odd = [&](size_t p, size_t q) {
-      for (size_t i = p; i < n1; i += p * 2) {
-        for (size_t j = q; j < n2; j += q * 2) {
-          size_t s = theta[i][j - q];
-          size_t t = j + q >= n2 ? k : theta[i][j + q];
-          compute(i, j, s, t);
-        }
-      }
+      parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
+        parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
+          size_t x = p * (2 * i + 1);
+          size_t y = q * (2 * j + 1);
+          size_t s = theta[x][y - q];
+          size_t t = y + q >= n2 ? k : theta[x][y + q];
+          compute(x, y, s, t);
+        });
+      });
     };
     size_t p = get_pow2(n1), q = get_pow2(n2);
     compute(0, 0, 0, k);
@@ -170,16 +178,18 @@ class DAC_MM {
       if (r == MAX_VAL) {
         r = k;
       }
-      s_size_t mn_v = MAX_VAL;
-      s_size_t mn_p = MAX_VAL;
-      for (size_t o = l; o <= r; o++) {
-        s_size_t sum = up[i][o] + down[n2 - k - 1 + o][j];
-        if (sum < mn_v) {
-          mn_v = sum;
-          mn_p = o;
+      auto get_val = [&](s_size_t o) {
+        if (up[i][o] != MAX_VAL && down[n2 - k - 1 + o][j] != MAX_VAL) {
+          return up[i][o] + down[n2 - k - 1 + o][j];
         }
-      }
-      ret[n2 - k - 1 + i][j] = mn_v;
+        return MAX_VAL;
+      };
+      auto perm =
+          delayed_seq<s_size_t>(r - l + 1, [&](size_t id) { return id + l; });
+      s_size_t mn_p = *min_element(perm, [&](s_size_t a, s_size_t b) {
+        return get_val(a) < get_val(b);
+      });
+      ret[n2 - k - 1 + i][j] = get_val(mn_p);
       theta[i][j] = mn_p;
     };
     auto compute_odd_even = [&](size_t p, size_t q) {
@@ -244,9 +254,12 @@ class DAC_MM {
     } else if (n == 1) {
       auto left = Matrix(dist, 0, 0);
       auto right = Matrix(dist, 0, get<1>(dp[n][m1]));
-      solve_r(i, n, j, m1, left, theta, tmp, dp);
-      solve_r(i, n, j + m1, m2, right, Matrix(theta, 0, get<3>(dp[n][m1])),
-              Matrix(tmp, 0, get<5>(dp[n][m1])), dp);
+      par_do([&]() { solve_r(i, n, j, m1, left, theta, tmp, dp); },
+             [&]() {
+               solve_r(i, n, j + m1, m2, right,
+                       Matrix(theta, 0, get<3>(dp[n][m1])),
+                       Matrix(tmp, 0, get<5>(dp[n][m1])), dp);
+             });
       merge_horizontal(left, right, Matrix(tmp, 0, 0), theta, n + m1 + 1,
                        n + m2 + 1, n);
       parallel_for(0, n + m + 1, [&](size_t x) {
@@ -255,32 +268,54 @@ class DAC_MM {
     } else if (m == 1) {
       auto up = Matrix(dist, 0, 0);
       auto down = Matrix(dist, get<0>(dp[n1][m]), 0);
-      solve_r(i, n1, j, m, up, theta, tmp, dp);
-      solve_r(i + n1, n2, j, m, down, Matrix(theta, get<2>(dp[n1][m]), 0),
-              Matrix(tmp, get<4>(dp[n1][m]), 0), dp);
+      par_do([&]() { solve_r(i, n1, j, m, up, theta, tmp, dp); },
+             [&]() {
+               solve_r(i + n1, n2, j, m, down,
+                       Matrix(theta, get<2>(dp[n1][m]), 0),
+                       Matrix(tmp, get<4>(dp[n1][m]), 0), dp);
+             });
       merge_vertical(up, down, Matrix(tmp, 0, 0), theta, n1 + m + 1, n2 + m + 1,
                      m);
       parallel_for(0, n + m + 1, [&](size_t x) {
         parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
       });
     } else {
-      auto [len1, len2, len3, len4, len5, len6] = dp[n1][m1];
+      size_t len1, len2, len3, len4, len5, len6;
+      std::tie(len1, len2, len3, len4, len5, len6) = dp[n1][m1];
       auto upper_left = Matrix(dist, 0, 0);
       auto bottom_left = Matrix(dist, len1, 0);
       auto upper_right = Matrix(dist, 0, len2);
       auto bottom_right = Matrix(dist, len1, len2);
-      solve_r(i, n1, j, m1, upper_left, theta, tmp, dp);
-      solve_r(i + n1, n2, j, m1, bottom_left, Matrix(theta, len3, 0),
-              Matrix(tmp, len5, 0), dp);
-      solve_r(i, n1, j + m1, m2, upper_right, Matrix(theta, 0, len4),
-              Matrix(tmp, 0, len6), dp);
-      solve_r(i + n1, n2, j + m1, m2, bottom_right, Matrix(theta, len3, len4),
-              Matrix(tmp, len5, len6), dp);
-
-      merge_vertical(upper_left, bottom_left, Matrix(tmp, 0, 0), theta,
-                     n1 + m1 + 1, n2 + m1 + 1, m1);
-      merge_vertical(upper_right, bottom_right, Matrix(tmp, 0, len6),
-                     Matrix(theta, 0, len4), n1 + m2 + 1, n2 + m2 + 1, m2);
+      par_do(
+          [&]() {
+            par_do([&]() { solve_r(i, n1, j, m1, upper_left, theta, tmp, dp); },
+                   [&]() {
+                     solve_r(i + n1, n2, j, m1, bottom_left,
+                             Matrix(theta, len3, 0), Matrix(tmp, len5, 0), dp);
+                   });
+          },
+          [&]() {
+            par_do(
+                [&]() {
+                  solve_r(i, n1, j + m1, m2, upper_right,
+                          Matrix(theta, 0, len4), Matrix(tmp, 0, len6), dp);
+                },
+                [&]() {
+                  solve_r(i + n1, n2, j + m1, m2, bottom_right,
+                          Matrix(theta, len3, len4), Matrix(tmp, len5, len6),
+                          dp);
+                });
+          });
+      par_do(
+          [&]() {
+            merge_vertical(upper_left, bottom_left, Matrix(tmp, 0, 0), theta,
+                           n1 + m1 + 1, n2 + m1 + 1, m1);
+          },
+          [&]() {
+            merge_vertical(upper_right, bottom_right, Matrix(tmp, 0, len6),
+                           Matrix(theta, 0, len4), n1 + m2 + 1, n2 + m2 + 1,
+                           m2);
+          });
       merge_horizontal(Matrix(tmp, 0, 0), Matrix(tmp, 0, len6), dist, theta,
                        n + m1 + 1, n + m2 + 1, n);
     }
@@ -338,9 +373,6 @@ class DAC_MM {
     }
 
     auto [N1, N2, N3, N4, N5, N6] = dp[n][m];
-    printf("Allocate dist %zu by %zu\n", N1, N2);
-    printf("Allocate theta %zu by %zu\n", N3, N4);
-    printf("Allocate tmp %zu by %zu\n", N5, N6);
     auto dist =
         sequence<sequence<s_size_t>>(N1, sequence<s_size_t>(N2, MAX_VAL));
     auto theta =

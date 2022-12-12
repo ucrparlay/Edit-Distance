@@ -59,21 +59,17 @@ class DAC_MM {
 
   void merge_horizontal(Matrix left, Matrix right, Matrix ret, Matrix theta,
                         size_t n1, size_t n2, size_t k) {
-    for (size_t i = 0; i < n1; i++) {
-      for (size_t j = 0; j < n1 - k; j++) {
-        ret[i][j] = left[i][j];
-      }
-    }
-    for (size_t i = 0; i < n2 - k; i++) {
-      for (size_t j = 0; j < n2; j++) {
+    parallel_for(0, n1, [&](size_t i) {
+      parallel_for(0, n1 - k, [&](size_t j) { ret[i][j] = left[i][j]; });
+    });
+    parallel_for(0, n2 - k, [&](size_t i) {
+      parallel_for(0, n2, [&](size_t j) {
         ret[n1 - 1 + i][n1 - k - 1 + j] = right[k + i][j];
-      }
-    }
-    for (size_t i = 0; i < n2 - k; i++) {
-      for (size_t j = 0; j < n1 - k; j++) {
-        ret[n1 - 1 + i][j] = MAX_VAL;
-      }
-    }
+      });
+    });
+    parallel_for(0, n2 - k, [&](size_t i) {
+      parallel_for(0, n1 - k, [&](size_t j) { ret[n1 - 1 + i][j] = MAX_VAL; });
+    });
 
     auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
       if (i + (n2 - k - 1) < j) {
@@ -150,21 +146,17 @@ class DAC_MM {
 
   void merge_vertical(Matrix up, Matrix down, Matrix ret, Matrix theta,
                       size_t n1, size_t n2, size_t k) {
-    for (size_t i = 0; i < n1; i++) {
-      for (size_t j = 0; j < n1 - k; j++) {
+    parallel_for(0, n1, [&](size_t i) {
+      parallel_for(0, n1 - k, [&](size_t j) {
         ret[n2 - k - 1 + i][n2 - 1 + j] = up[i][k + j];
-      }
-    }
-    for (size_t i = 0; i < n2 - k; i++) {
-      for (size_t j = 0; j < n2; j++) {
-        ret[i][j] = down[i][j];
-      }
-    }
-    for (size_t i = 0; i < n2 - k; i++) {
-      for (size_t j = 0; j < n1 - k; j++) {
-        ret[i][n2 - 1 + j] = MAX_VAL;
-      }
-    }
+      });
+    });
+    parallel_for(0, n2 - k, [&](size_t i) {
+      parallel_for(0, n2, [&](size_t j) { ret[i][j] = down[i][j]; });
+    });
+    parallel_for(0, n2 - k, [&](size_t i) {
+      parallel_for(0, n1 - k, [&](size_t j) { ret[i][n2 - 1 + j] = MAX_VAL; });
+    });
 
     auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
       if (i > j + (n1 - k - 1)) {
@@ -257,11 +249,9 @@ class DAC_MM {
               Matrix(tmp, 0, get<5>(dp[n][m1])), dp);
       merge_horizontal(left, right, Matrix(tmp, 0, 0), theta, n + m1 + 1,
                        n + m2 + 1, n);
-      for (size_t x = 0; x < n + m + 1; x++) {
-        for (size_t y = 0; y < n + m + 1; y++) {
-          dist[x][y] = tmp[x][y];
-        }
-      }
+      parallel_for(0, n + m + 1, [&](size_t x) {
+        parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
+      });
     } else if (m == 1) {
       auto up = Matrix(dist, 0, 0);
       auto down = Matrix(dist, get<0>(dp[n1][m]), 0);
@@ -270,11 +260,9 @@ class DAC_MM {
               Matrix(tmp, get<4>(dp[n1][m]), 0), dp);
       merge_vertical(up, down, Matrix(tmp, 0, 0), theta, n1 + m + 1, n2 + m + 1,
                      m);
-      for (size_t x = 0; x < n + m + 1; x++) {
-        for (size_t y = 0; y < n + m + 1; y++) {
-          dist[x][y] = tmp[x][y];
-        }
-      }
+      parallel_for(0, n + m + 1, [&](size_t x) {
+        parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
+      });
     } else {
       auto [len1, len2, len3, len4, len5, len6] = dp[n1][m1];
       auto upper_left = Matrix(dist, 0, 0);

@@ -1,15 +1,7 @@
 #ifndef hash_block_parallel_hpp
 #define hash_block_parallel_hpp
 
-#include <stdio.h>
-#include <iostream>
-#include <cstring>
-#include <cstdio>
-#include <math.h>
-#include <vector>
-#include <string>
-#include <stdint.h>
-#include <cstdint>
+#include "utils.h"
 using namespace std;
 // const int PRIME_BASE = 139;
 
@@ -81,11 +73,12 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size)
     for (int i = 1; i < mylog2(k) + 1; i++)
     {
         table_seq[i].resize(k - block_log_table[i] + 1);
-        // ! can be parallelized
-        for (int j = 0; j < k - block_log_table[i] + 1; j++)
-        {
-            table_seq[i][j] = table_seq[i - 1][j] * block_power_table[i - 1] + table_seq[i - 1][j + block_log_table[i - 1]];
-        }
+        // for (int j = 0; j < k - block_log_table[i] + 1; j++)
+        // {
+        //     table_seq[i][j] = table_seq[i - 1][j] * block_power_table[i - 1] + table_seq[i - 1][j + block_log_table[i - 1]];
+        // }
+        parlay::parallel_for(0, k - block_log_table[i] + 1, [&](int j)
+                             { table_seq[i][j] = table_seq[i - 1][j] * block_power_table[i - 1] + table_seq[i - 1][j + block_log_table[i - 1]]; });
     }
 }
 
@@ -117,50 +110,79 @@ void construct_table(T A, T B, vector<vector<int>> &table_A,
     }
 
     auxiliary_single_power_table.resize(n);
-    for (int i = 0; i < n; i++)
-    {
-        auxiliary_single_power_table[i] = mypower(PRIME_BASE, i);
-    }
-    // ! can be parallelized
+    // for (int i = 0; i < n; i++)
+    // {
+    //     auxiliary_single_power_table[i] = mypower(PRIME_BASE, i);
+    // }
+    // // ! can be parallelized
+    parlay::parallel_for(0, n, [&](int i)
+                         { auxiliary_single_power_table[i] = mypower(PRIME_BASE, i); });
+
     int a_actual_size = BLOCK_SIZE * int(A.size() / BLOCK_SIZE);
     int b_actual_size = BLOCK_SIZE * int(B.size() / BLOCK_SIZE);
     prefix_a.resize(a_actual_size);
     prefix_b.resize(b_actual_size);
     suffix_a.resize(a_actual_size);
     suffix_b.resize(b_actual_size);
-    for (int i = 0; i < a_actual_size; i++)
-    {
+    // for (int i = 0; i < a_actual_size; i++)
+    // {
+    //     prefix_a[i] = 0;
+    //     // ! can be parallelized
+    //     for (int j = int(BLOCK_SIZE) * (i / BLOCK_SIZE); j <= i; j++)
+    //     {
+    //         prefix_a[i] += auxiliary_single_power_table[i - j] * int(A[j]);
+    //     }
+    //     suffix_a[i] = 0;
+    //     // ! can be parallelized
+    //     for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++)
+    //     {
+    //         suffix_a[i] += auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) - k - 1] * int(A[k]);
+    //     }
+    // }
+    parlay::parallel_for(0, a_actual_size, [&](int i)
+                         {
         prefix_a[i] = 0;
-        // ! can be parallelized
         for (int j = int(BLOCK_SIZE) * (i / BLOCK_SIZE); j <= i; j++)
         {
             prefix_a[i] += auxiliary_single_power_table[i - j] * int(A[j]);
         }
         suffix_a[i] = 0;
-        // ! can be parallelized
         for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++)
         {
             suffix_a[i] += auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) - k - 1] * int(A[k]);
-        }
-    }
+        } });
 
-    for (int i = 0; i < b_actual_size; i++)
-    {
+    //     for (int i = 0; i < b_actual_size; i++)
+    //     {
+    //         prefix_b[i] = 0;
+    //         // ! can be parallelized
+    //         for (int j = int(BLOCK_SIZE) * (i / BLOCK_SIZE); j <= i; j++)
+    //         {
+    //             prefix_b[i] += auxiliary_single_power_table[i - j] * int(B[j]);
+    //         }
+    //         suffix_b[i] = 0;
+    //         // ! can be parallelized
+    //         for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++)
+    //         {
+    //             suffix_b[i] += auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) - k - 1] * int(B[k]);
+    //         }
+    //     }
+    parlay::parallel_for(0, b_actual_size, [&](int i)
+                         {
+        {
+
         prefix_b[i] = 0;
-        // ! can be parallelized
         for (int j = int(BLOCK_SIZE) * (i / BLOCK_SIZE); j <= i; j++)
         {
             prefix_b[i] += auxiliary_single_power_table[i - j] * int(B[j]);
         }
         suffix_b[i] = 0;
-        // ! can be parallelized
         for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++)
         {
             suffix_b[i] += auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) - k - 1] * int(B[k]);
         }
-    }
+    } });
 }
-
 bool compare_lcp(int p, int q, int z,
                  vector<vector<int>> &table_A,
                  vector<vector<int>> &table_B,

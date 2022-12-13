@@ -20,5 +20,7 @@
 #include "parlay/primitives.h"
 #include "parlay/sequence.h"
 #include "parlay/internal/get_time.h"
+#include <math.h>
+
 
 #endif /* utils_h */

@@ -5,7 +5,7 @@ else
 CC = g++
 endif
 
-CPPFLAGS = -std=c++17 -O3 -Wall -Wextra
+CPPFLAGS = -std=c++17 -Wall -Wextra
 
 ifdef CILKPLUS
 CPPFLAGS += -DPARLAY_CILKPLUS -DCILK -fcilkplus

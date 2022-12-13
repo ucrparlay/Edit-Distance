@@ -10,6 +10,7 @@ using namespace std;
 template <typename T, typename s_size_t = uint32_t>
 class DAC_MM {
   static constexpr s_size_t MAX_VAL = std::numeric_limits<s_size_t>::max() / 2;
+  static constexpr size_t BASE_CASE_SIZE = 32;
   struct Vector {
     sequence<s_size_t> &seq;
     const size_t c;
@@ -59,6 +60,37 @@ class DAC_MM {
 
   void merge_horizontal(Matrix left, Matrix right, Matrix ret, Matrix theta,
                         size_t n1, size_t n2, size_t k) {
+    size_t n = n1 + n2 - k - 1;
+    if (n < BASE_CASE_SIZE) {
+      for (size_t i = 0; i < n1; i++) {
+        for (size_t j = 0; j < n1 - k; j++) {
+          ret[i][j] = left[i][j];
+        }
+      }
+      for (size_t i = 0; i < n2 - k; i++) {
+        for (size_t j = 0; j < n2; j++) {
+          ret[n1 - 1 + i][n1 - k - 1 + j] = right[k + i][j];
+        }
+      }
+      for (size_t i = 0; i < n2 - k; i++) {
+        for (size_t j = 0; j < n1 - k; j++) {
+          ret[n1 - 1 + i][j] = MAX_VAL;
+        }
+      }
+      for (size_t i = 0; i < n1; i++) {
+        for (size_t j = 0; j < n2; j++) {
+          ret[i][n1 - k - 1 + j] = MAX_VAL;
+          for (size_t o = 0; o < k + 1; o++) {
+            if (left[i][n1 - k - 1 + o] != MAX_VAL && right[o][j] != MAX_VAL) {
+              ret[i][n1 - k - 1 + j] =
+                  min(ret[i][n1 - k - 1 + j],
+                      left[i][n1 - k - 1 + o] + right[o][j]);
+            }
+          }
+        }
+      }
+      return;
+    }
     parallel_for(0, n1, [&](size_t i) {
       parallel_for(0, n1 - k, [&](size_t j) { ret[i][j] = left[i][j]; });
     });
@@ -154,6 +186,36 @@ class DAC_MM {
 
   void merge_vertical(Matrix up, Matrix down, Matrix ret, Matrix theta,
                       size_t n1, size_t n2, size_t k) {
+    size_t n = n1 + n2 - k - 1;
+    if (n < BASE_CASE_SIZE) {
+      for (size_t i = 0; i < n1; i++) {
+        for (size_t j = 0; j < n1 - k; j++) {
+          ret[n2 - k - 1 + i][n2 - 1 + j] = up[i][k + j];
+        }
+      }
+      for (size_t i = 0; i < n2 - k; i++) {
+        for (size_t j = 0; j < n2; j++) {
+          ret[i][j] = down[i][j];
+        }
+      }
+      for (size_t i = 0; i < n2 - k; i++) {
+        for (size_t j = 0; j < n1 - k; j++) {
+          ret[i][n2 - 1 + j] = MAX_VAL;
+        }
+      }
+      for (size_t i = 0; i < n1; i++) {
+        for (size_t j = 0; j < n2; j++) {
+          ret[n2 - k - 1 + i][j] = MAX_VAL;
+          for (size_t o = 0; o < k + 1; o++) {
+            if (up[i][o] != MAX_VAL && down[n2 - k - 1 + o][j] != MAX_VAL) {
+              ret[n2 - k - 1 + i][j] = min(ret[n2 - k - 1 + i][j],
+                                           up[i][o] + down[n2 - k - 1 + o][j]);
+            }
+          }
+        }
+      }
+      return;
+    }
     parallel_for(0, n1, [&](size_t i) {
       parallel_for(0, n1 - k, [&](size_t j) {
         ret[n2 - k - 1 + i][n2 - 1 + j] = up[i][k + j];

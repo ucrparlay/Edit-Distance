@@ -10,18 +10,13 @@ using namespace std;
 template <typename T, typename s_size_t = uint32_t>
 class DAC_MM {
   static constexpr s_size_t MAX_VAL = std::numeric_limits<s_size_t>::max() / 2;
-  static constexpr size_t BASE_CASE_SIZE = 32;
+  static constexpr size_t BASE_CASE_SIZE = 64;
   struct Vector {
     sequence<s_size_t> &seq;
     const size_t c;
     Vector(sequence<s_size_t> &_seq, size_t _c) : seq(_seq), c(_c) {}
-    s_size_t &operator[](size_t y) {
-      if (y + c >= seq.size()) {
-        printf("size: %zu, accessing %zu\n", seq.size(), y + c);
-      }
-      assert(y + c < seq.size());
-      return seq[y + c];
-    }
+    s_size_t &operator[](size_t y) { return seq[y + c]; }
+    s_size_t operator[](size_t y) const { return seq[y + c]; }
   };
   struct Matrix {
     sequence<sequence<s_size_t>> &seq;
@@ -31,18 +26,8 @@ class DAC_MM {
         : seq(_seq), r(_r), c(_c) {}
     Matrix(Matrix &_m, size_t _r, size_t _c)
         : seq(_m.seq), r(_m.r + _r), c(_m.c + _c) {}
-    Vector operator[](size_t x) {
-      if (x + r >= seq.size()) {
-        printf("size: %zu, accessing %zu\n", seq.size(), x + r);
-      }
-      assert(x + r < seq.size());
-      return Vector(seq[x + r], c);
-    }
-
-    Vector operator[](size_t x) const {
-      assert(x + r < seq.size());
-      return Vector(seq[x + r], c);
-    }
+    Vector operator[](size_t x) { return Vector(seq[x + r], c); }
+    Vector operator[](size_t x) const { return Vector(seq[x + r], c); }
   };
 
   const sequence<T> &A;

@@ -279,25 +279,25 @@ int query_lcp(int p, int q,
         qq = q;
     }
 
-    // if it is the beginning of the offset
-    if (pp == table_A[0].size() || (qq == table_B[0].size()))
+    // // if it is the beginning of the offset
+    // if (pp == table_A[0].size() || (qq == table_B[0].size()))
+    // {
+    //     while (pp < A.size() && qq < B.size())
+    //     {
+    //         if (int(A[pp++]) != int(B[qq++]))
+    //         {
+    //             break;
+    //         }
+    //     }
+    // }
+    // else
+    // { // if not
+    while (int(A[pp] == int(B[qq])))
     {
-        while (pp < A.size() && qq < B.size())
-        {
-            if (int(A[pp++]) != int(B[qq++]))
-            {
-                break;
-            }
-        }
+        pp++;
+        qq++;
     }
-    else
-    { // if not
-        while (int(A[pp] == int(B[qq])))
-        {
-            pp++;
-            qq++;
-        }
-    }
+    // }
     return (pp - p);
 }
 

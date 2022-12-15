@@ -3,11 +3,16 @@
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
 template <typename Seq>
-int EditDistanceHashParallel(const Seq &a, const Seq &b)
-{
+int EditDistanceHashParallel(const Seq &a, const Seq &b) {
   // build sparse table
   size_t n = a.size();
   size_t m = b.size();
+  if (n == 0) {
+    return m;
+  }
+  if (m == 0) {
+    return n;
+  }
   int k1 = 0;
   int k2 = 0;
   while (1 << (++k1) <= n)
@@ -23,22 +28,18 @@ int EditDistanceHashParallel(const Seq &a, const Seq &b)
 
   build_hash_table(a, b, table_s1, table_s2, powerN1, powerN2, logN1, logN2);
 
-  auto Diag = [&](int i, int j)
-  { return i - j + m; };
+  auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
   max_row[Diag(0, 0)] = query_lcp(table_s1, table_s2, logN1, logN2, 0, 0);
 
   // bfs for path
   int k = 0;
-  for (;;)
-  {
-    if (max_row[Diag(n, m)] == n)
-      break; // find path
+  for (;;) {
+    if (max_row[Diag(n, m)] == n) break;  // find path
     k++;
     int l = Diag(0, std::min(k, int(m)));
     int r = Diag(std::min(k, int(n)), 0);
-    parlay::parallel_for(l, r + 1, [&](int id)
-                         {
+    parlay::parallel_for(l, r + 1, [&](int id) {
       int t = -1;
       if (max_row[id] != -1) {
         int i = max_row[id];
@@ -72,10 +73,10 @@ int EditDistanceHashParallel(const Seq &a, const Seq &b)
         }
       }
       // assert(t <= n);
-      temp[id] = t; });
+      temp[id] = t;
+    });
     parlay::parallel_for(l, r + 1,
-                         [&](int id)
-                         { max_row[id] = std::min(temp[id], id); });
+                         [&](int id) { max_row[id] = std::min(temp[id], id); });
   }
   return k;
 }

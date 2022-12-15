@@ -4,7 +4,6 @@
 #include "utils.h"
 #define ull unsigned long long
 using namespace std;
-const int PRIME_BASE = 139;
 
 // Function for building two sparse hash tables for sequences A and B
 // Input: two seuences `s1` and `s2`, two 2-d vectors as tables.
@@ -28,7 +27,7 @@ void build_hash_table(const parlay::sequence<T> &s1,
     table1_d1++;
     upp1 *= 2;
   }
-  while (upp2 < table2_d2) {
+  while (upp2 <= table2_d2) {
     table2_d1++;
     upp2 *= 2;
   }
@@ -62,27 +61,31 @@ void build_hash_table(const parlay::sequence<T> &s1,
   }
 
   // build the second to k-th layer
-  for (int i = 1; i < table1_d1; i++) {
-    table_s1[i].resize(table1_d2 - logN1[i] + 1);
-    parlay::parallel_for(0, table1_d2 - logN1[i] + 1, [&](int j) {
-      // for (int pw = 0; pw < logN1[i - 1]; pw++) {
-      //   table_s1[i][j] = table_s1[i - 1][j] * PRIME_BASE;
-      // }
-      // table_s1[i][j] += table_s1[i - 1][j + logN1[i - 1]];
-      table_s1[i][j] =
-          table_s1[i - 1][j + logN1[i - 1]] + table_s1[i - 1][j] * powerN1[i];
-    });
+  if (table1_d1 > 1) {
+    for (int i = 1; i < table1_d1; i++) {
+      table_s1[i].resize(table1_d2 - logN1[i] + 1);
+      parlay::parallel_for(0, table1_d2 - logN1[i] + 1, [&](int j) {
+        // for (int pw = 0; pw < logN1[i - 1]; pw++) {
+        //   table_s1[i][j] = table_s1[i - 1][j] * PRIME_BASE;
+        // }
+        // table_s1[i][j] += table_s1[i - 1][j + logN1[i - 1]];
+        table_s1[i][j] =
+            table_s1[i - 1][j + logN1[i - 1]] + table_s1[i - 1][j] * powerN1[i];
+      });
+    }
   }
-  for (int i = 1; i < table2_d1; i++) {
-    table_s2[i].resize(table2_d2 - logN2[i] + 1);
-    parlay::parallel_for(0, table2_d2 - logN2[i] + 1, [&](int j) {
-      // for (int pw = 0; pw < logN2[i - 1]; pw++) {
-      //   table_s2[i][j] = table_s2[i - 1][j] * PRIME_BASE;
-      // }
-      // table_s2[i][j] += table_s2[i - 1][j + logN2[i - 1]];
-      table_s2[i][j] =
-          table_s2[i - 1][j + logN2[i - 1]] + table_s2[i - 1][j] * powerN2[i];
-    });
+  if (table2_d1 > 1) {
+    for (int i = 1; i < table2_d1; i++) {
+      table_s2[i].resize(table2_d2 - logN2[i] + 1);
+      parlay::parallel_for(0, table2_d2 - logN2[i] + 1, [&](int j) {
+        // for (int pw = 0; pw < logN2[i - 1]; pw++) {
+        //   table_s2[i][j] = table_s2[i - 1][j] * PRIME_BASE;
+        // }
+        // table_s2[i][j] += table_s2[i - 1][j + logN2[i - 1]];
+        table_s2[i][j] =
+            table_s2[i - 1][j + logN2[i - 1]] + table_s2[i - 1][j] * powerN2[i];
+      });
+    }
   }
 }
 
@@ -95,7 +98,7 @@ void build_hash_table(const parlay::sequence<T> &s1,
 //    auto lcp(Seq1 const &s, Seq2 const &SA);
 int query_lcp(vector<vector<int>> &table1, vector<vector<int>> &table2,
               vector<int> &logN1, vector<int> &logN2, int i, int j) {
-  // if (i == table1[0].size() || j == table2[0].size()) return 1;
+  if (i == table1[0].size() || j == table2[0].size()) return 1;
   if (table1[0][i] != table2[0][j]) return 0;
   // possible value is from 0 to the smaller one of the remaining sequences
   int max_range = std::min(table1[0].size() - i, table2[0].size() - j);

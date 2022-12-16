@@ -88,7 +88,6 @@ void construct_table(T A, T B, vector<vector<int>> &table_A,
 {
   // logn
   size_t BLOCK_SIZE = mylog2(n);
-  printf("block_szie: %u\n", BLOCK_SIZE);
   // build the powertable
   if (BLOCK_SIZE == 0)
   {
@@ -175,9 +174,6 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
   }
   else if (z != 0)
   {
-    // hash_a_v = S_A[p] * aux_power_table[(1 << z) * t - rest_A_size] +
-    //            table_A[z - 1][next_block_A] * aux_power_table[t - rest_A_size] +
-    //            P_A[p + (1 << z) * t - 1];
     hash_a_v = S_A[p] * aux_power_table[(1 << z) * t - rest_A_size] +
                (table_A[z][next_block_A]) - S_A[p + 1 << z] / aux_power_table[rest_A_size];
   }
@@ -192,9 +188,6 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
   }
   else if (z != 0)
   {
-    // hash_b_v = S_B[q] * aux_power_table[(1 << z) * t - rest_B_size] +
-    //            table_B[z - 1][next_block_B] * aux_power_table[t - rest_B_size] +
-    //            P_B[1 + (1 << z) * t - 1];
     hash_b_v = S_B[q] * aux_power_table[(1 << z) * t - rest_B_size] +
                (table_B[z][next_block_B]) - S_B[q + 1 << z] / aux_power_table[rest_B_size];
   }

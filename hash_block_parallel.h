@@ -205,7 +205,7 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
 
 // function for query the lcp from A[p] and B[q]
 template <typename T>
-int block_query_lcp(int p, int q, T A, T B, vector<vector<int>> &table_A,
+int block_query_lcp(int p, int q, const T &A, const T &B, vector<vector<int>> &table_A,
                     vector<vector<int>> &table_B, vector<int> &S_A,
                     vector<int> &P_A, vector<int> &S_B, vector<int> &P_B,
                     vector<int> &aux_power_table,
@@ -254,7 +254,7 @@ int block_query_lcp(int p, int q, T A, T B, vector<vector<int>> &table_A,
     qq = q;
   }
 
-  while ((int(A[pp] == int(B[qq]))) && pp < A.size() && qq < B.size())
+  while (pp < A.size() && qq < B.size() && (int(A[pp] == int(B[qq]))))
   {
     pp++;
     qq++;

@@ -3,6 +3,7 @@
 #include <parlay/sequence.h>
 
 #include <algorithm>
+#include <queue>
 
 using namespace parlay;
 using namespace std;
@@ -11,23 +12,17 @@ template <typename T, typename s_size_t = uint32_t>
 class DAC_MM {
   static constexpr s_size_t MAX_VAL = std::numeric_limits<s_size_t>::max() / 2;
   static constexpr size_t BASE_CASE_SIZE = 64;
-  struct Vector {
-    sequence<s_size_t> &seq;
-    const size_t c;
-    Vector(sequence<s_size_t> &_seq, size_t _c) : seq(_seq), c(_c) {}
-    s_size_t &operator[](size_t y) { return seq[y + c]; }
-    s_size_t operator[](size_t y) const { return seq[y + c]; }
-  };
+  template <typename It>
   struct Matrix {
-    sequence<sequence<s_size_t>> &seq;
+    slice<It, It> seq;
     const size_t r;
     const size_t c;
-    Matrix(sequence<sequence<s_size_t>> &_seq, size_t _r, size_t _c)
-        : seq(_seq), r(_r), c(_c) {}
-    Matrix(Matrix &_m, size_t _r, size_t _c)
-        : seq(_m.seq), r(_m.r + _r), c(_m.c + _c) {}
-    Vector operator[](size_t x) { return Vector(seq[x + r], c); }
-    Vector operator[](size_t x) const { return Vector(seq[x + r], c); }
+    Matrix(slice<It, It> seq, size_t r, size_t c) : seq(seq), r(r), c(c) {}
+    Matrix(Matrix &_m, size_t _r, size_t _c) : seq(_m.seq), r(_r), c(_c) {}
+    slice<It, It> operator[](size_t x) { return seq.cut(x * c, x * (c + 1)); }
+    slice<It, It> operator[](size_t x) const {
+      return seq.cut(x * c, x * (c + 1));
+    }
   };
 
   const sequence<T> &A;
@@ -43,9 +38,17 @@ class DAC_MM {
     return ret;
   }
 
-  void merge_horizontal(Matrix left, Matrix right, Matrix ret, Matrix theta,
-                        size_t n1, size_t n2, size_t k) {
+  template <typename Iterator>
+  void merge_horizontal(slice<Iterator, Iterator> _left,
+                        slice<Iterator, Iterator> _right,
+                        slice<Iterator, Iterator> _ret,
+                        slice<Iterator, Iterator> _theta, size_t n1, size_t n2,
+                        size_t k) {
     size_t n = n1 + n2 - k - 1;
+    auto left = Matrix(_left, n1, n1);
+    auto right = Matrix(_right, n2, n2);
+    auto ret = Matrix(_ret, n, n);
+    auto theta = Matrix(_theta, n1, n2);
     if (n < BASE_CASE_SIZE) {
       for (size_t i = 0; i < n1; i++) {
         for (size_t j = 0; j < n1 - k; j++) {
@@ -169,9 +172,17 @@ class DAC_MM {
     }
   }
 
-  void merge_vertical(Matrix up, Matrix down, Matrix ret, Matrix theta,
-                      size_t n1, size_t n2, size_t k) {
+  template <typename Iterator>
+  void merge_vertical(slice<Iterator, Iterator> _up,
+                      slice<Iterator, Iterator> _down,
+                      slice<Iterator, Iterator> _ret,
+                      slice<Iterator, Iterator> _theta, size_t n1, size_t n2,
+                      size_t k) {
     size_t n = n1 + n2 - k - 1;
+    auto up = Matrix(_up, n1, n1);
+    auto down = Matrix(_down, n2, n2);
+    auto ret = Matrix(_ret, n, n);
+    auto theta = Matrix(_theta, n1, n2);
     if (n < BASE_CASE_SIZE) {
       for (size_t i = 0; i < n1; i++) {
         for (size_t j = 0; j < n1 - k; j++) {
@@ -288,10 +299,55 @@ class DAC_MM {
     }
   }
 
-  void solve_r(size_t i, size_t n, size_t j, size_t m, Matrix dist,
-               Matrix theta, Matrix tmp,
-               const sequence<sequence<tuple<size_t, size_t, size_t, size_t,
-                                             size_t, size_t>>> &dp) {
+  size_t sqr(size_t x) { return x * x; }
+  size_t get_size(size_t n, size_t m) { return sqr(2 * (n + m) - 1); }
+
+  template <typename Iterator>
+  s_size_t solve_r_serial(size_t i, size_t n, size_t j, size_t m,
+                          slice<Iterator, Iterator> _dist,
+                          slice<Iterator, Iterator> _theta,
+                          slice<Iterator, Iterator> _tmp) {
+    auto dist = Matrix<Iterator>(_dist, n + m + 1, n + m + 1);
+    if (n + m + 1 < BASE_CASE_SIZE / 4) {
+      for (size_t x = 0; x < n + m + 1; x++) {
+        s_size_t d[n + 1][m + 1];
+        for (size_t u = 0; u < n + 1; u++) {
+          for (size_t v = 0; v < m + 1; v++) {
+            d[u][v] = MAX_VAL;
+          }
+        }
+        s_size_t s = (x <= n ? n - x : 0);
+        s_size_t t = (x <= n ? 0 : x - n);
+        queue<pair<s_size_t, s_size_t>> q;
+        q.push(make_pair(s, t));
+        d[s][t] = 0;
+        while (!q.empty()) {
+          auto [u, v] = q.front();
+          q.pop();
+          if (u + 1 <= n && v + 1 <= m) {
+            s_size_t w = A[i + u] == B[j + v] ? 0 : 1;
+            if (d[u + 1][v + 1] > d[u][v] + w) {
+              d[u + 1][v + 1] = d[u][v] + w;
+              q.push(make_pair(u + 1, v + 1));
+            }
+          }
+          if (u + 1 <= n && d[u + 1][v] > d[u][v] + 1) {
+            d[u + 1][v] = d[u][v] + 1;
+            q.push(make_pair(u + 1, v));
+          }
+          if (v + 1 <= m && d[u][v + 1] > d[u][v] + 1) {
+            d[u][v + 1] = d[u][v] + 1;
+            q.push(make_pair(u, v + 1));
+          }
+        }
+        for (size_t y = 0; y < n + m + 1; y++) {
+          s_size_t s = (y <= m ? n : n - (y - m));
+          s_size_t t = (y <= m ? y : m);
+          dist[x][y] = d[s][t];
+        }
+      }
+      return dist[n][m];
+    }
     size_t n1 = (n + 1) / 2, n2 = n - n1;
     size_t m1 = (m + 1) / 2, m2 = m - m1;
     if (n == 1 && m == 1) {
@@ -299,73 +355,210 @@ class DAC_MM {
       dist[0][1] = dist[1][0] = dist[1][2] = dist[2][1] = 1;
       dist[1][1] = (A[i] != B[j]);
     } else if (n == 1) {
-      auto left = Matrix(dist, 0, 0);
-      auto right = Matrix(dist, 0, get<1>(dp[n][m1]));
-      par_do([&]() { solve_r(i, n, j, m1, left, theta, tmp, dp); },
-             [&]() {
-               solve_r(i, n, j + m1, m2, right,
-                       Matrix(theta, 0, get<3>(dp[n][m1])),
-                       Matrix(tmp, 0, get<5>(dp[n][m1])), dp);
-             });
-      merge_horizontal(left, right, Matrix(tmp, 0, 0), theta, n + m1 + 1,
-                       n + m2 + 1, n);
+      size_t size1 = get_size(n, m1);
+      size_t size2 = get_size(n, m2);
+      size_t psize0 = 0;
+      size_t psize1 = psize0 + size1;
+      size_t psize2 = psize1 + size2;
+      auto L = _dist.cut(psize0, psize1);
+      auto R = _dist.cut(psize1, psize2);
+
+      solve_r(i, n, j, m1, L, _theta.cut(0, size1), _tmp.cut(0, size1));
+      solve_r(i, n, j + m1, m2, R, _theta.cut(size1, size1 + size2),
+              _tmp.cut(size1, size1 + size2));
+
+      merge_horizontal(L, R, _tmp, _theta, n + m1 + 1, n + m2 + 1, n);
+      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
+      for (size_t x = 0; x < n + m + 1; x++) {
+        for (size_t y = 0; y < n + m + 1; y++) {
+          dist[x][y] = tmp[x][y];
+        }
+      }
+    } else if (m == 1) {
+      size_t size1 = get_size(n1, m);
+      size_t size2 = get_size(n2, m);
+      size_t psize0 = 0;
+      size_t psize1 = psize0 + size1;
+      size_t psize2 = psize1 + size2;
+      auto U = _dist.cut(psize0, psize1);
+      auto D = _dist.cut(psize1, psize2);
+
+      solve_r(i, n1, j, m, U, _theta.cut(psize0, psize1),
+              _tmp.cut(psize0, psize1));
+      solve_r(i + n1, n2, j, m, D, _theta.cut(psize1, psize2),
+              _tmp.cut(psize1, psize2));
+
+      merge_vertical(U, D, _tmp, _theta, n1 + m + 1, n2 + m + 1, m);
+      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
+      for (size_t x = 0; x < n + m + 1; x++) {
+        for (size_t y = 0; y < n + m + 1; y++) {
+          dist[x][y] = tmp[x][y];
+        }
+      }
+    } else {
+      size_t size1 = get_size(n1, m1);
+      size_t size2 = get_size(n1, m2);
+      size_t size3 = get_size(n2, m1);
+      size_t size4 = get_size(n2, m2);
+      size_t psize0 = 0;
+      size_t psize1 = psize0 + size1;
+      size_t psize2 = psize1 + size2;
+      size_t psize3 = psize2 + size3;
+      size_t psize4 = psize3 + size4;
+      auto UL = _dist.cut(psize0, psize1);
+      auto UR = _dist.cut(psize1, psize2);
+      auto LL = _dist.cut(psize2, psize3);
+      auto LR = _dist.cut(psize3, psize4);
+
+      solve_r(i, n1, j, m1, UL, _theta.cut(psize0, psize1),
+              _tmp.cut(psize0, psize1));
+      solve_r(i, n1, j + m1, m2, UR, _theta.cut(psize1, psize2),
+              _tmp.cut(psize1, psize2));
+      solve_r(i + n1, n2, j, m1, LL, _theta.cut(psize2, psize3),
+              _tmp.cut(psize2, size3));
+      solve_r(i + n1, n2, j + m1, m2, LR, _theta.cut(psize3, psize4),
+              _tmp.cut(psize3, psize4));
+
+      auto theta1 = _theta.cut(psize0, psize2);
+      auto theta2 = _theta.cut(psize2, psize4);
+      auto theta3 = _theta.cut(psize0, psize4);
+      auto tmp1 = _tmp.cut(psize0, psize2);
+      auto tmp2 = _tmp.cut(psize2, psize4);
+
+      merge_horizontal(UL, UR, tmp1, theta1, n1 + m1 + 1, n1 + m2 + 1, n1);
+      merge_horizontal(LL, LR, tmp2, theta2, n2 + m1 + 1, n2 + m2 + 1, n2);
+      merge_vertical(tmp1, tmp2, _dist, theta3, n1 + m + 1, n2 + m + 1, m);
+    }
+    return dist[n][m];
+  }
+
+  template <typename Iterator>
+  s_size_t solve_r(size_t i, size_t n, size_t j, size_t m,
+                   slice<Iterator, Iterator> _dist,
+                   slice<Iterator, Iterator> _theta,
+                   slice<Iterator, Iterator> _tmp) {
+    if (n + m + 1 < BASE_CASE_SIZE) {
+      return solve_r_serial(i, n, j, m, _dist, _theta, _tmp);
+    }
+    auto dist = Matrix<Iterator>(_dist, n + m + 1, n + m + 1);
+    size_t n1 = (n + 1) / 2, n2 = n - n1;
+    size_t m1 = (m + 1) / 2, m2 = m - m1;
+    if (n == 1 && m == 1) {
+      dist[0][0] = dist[2][2] = 0;
+      dist[0][1] = dist[1][0] = dist[1][2] = dist[2][1] = 1;
+      dist[1][1] = (A[i] != B[j]);
+    } else if (n == 1) {
+      size_t size1 = get_size(n, m1);
+      size_t size2 = get_size(n, m2);
+      size_t psize0 = 0;
+      size_t psize1 = psize0 + size1;
+      size_t psize2 = psize1 + size2;
+      auto L = _dist.cut(psize0, psize1);
+      auto R = _dist.cut(psize1, psize2);
+
+      par_do(
+          [&]() {
+            solve_r(i, n, j, m1, L, _theta.cut(0, size1), _tmp.cut(0, size1));
+          },
+          [&]() {
+            solve_r(i, n, j + m1, m2, R, _theta.cut(size1, size1 + size2),
+                    _tmp.cut(size1, size1 + size2));
+          });
+
+      merge_horizontal(L, R, _tmp, _theta, n + m1 + 1, n + m2 + 1, n);
+      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
       parallel_for(0, n + m + 1, [&](size_t x) {
         parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
       });
     } else if (m == 1) {
-      auto up = Matrix(dist, 0, 0);
-      auto down = Matrix(dist, get<0>(dp[n1][m]), 0);
-      par_do([&]() { solve_r(i, n1, j, m, up, theta, tmp, dp); },
-             [&]() {
-               solve_r(i + n1, n2, j, m, down,
-                       Matrix(theta, get<2>(dp[n1][m]), 0),
-                       Matrix(tmp, get<4>(dp[n1][m]), 0), dp);
-             });
-      merge_vertical(up, down, Matrix(tmp, 0, 0), theta, n1 + m + 1, n2 + m + 1,
-                     m);
+      size_t size1 = get_size(n1, m);
+      size_t size2 = get_size(n2, m);
+      size_t psize0 = 0;
+      size_t psize1 = psize0 + size1;
+      size_t psize2 = psize1 + size2;
+      auto U = _dist.cut(psize0, psize1);
+      auto D = _dist.cut(psize1, psize2);
+
+      par_do(
+          [&]() {
+            solve_r(i, n1, j, m, U, _theta.cut(psize0, psize1),
+                    _tmp.cut(psize0, psize1));
+          },
+          [&]() {
+            solve_r(i + n1, n2, j, m, D, _theta.cut(psize1, psize2),
+                    _tmp.cut(psize1, psize2));
+          });
+
+      merge_vertical(U, D, _tmp, _theta, n1 + m + 1, n2 + m + 1, m);
+      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
       parallel_for(0, n + m + 1, [&](size_t x) {
         parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
       });
     } else {
-      size_t len1, len2, len3, len4, len5, len6;
-      std::tie(len1, len2, len3, len4, len5, len6) = dp[n1][m1];
-      auto upper_left = Matrix(dist, 0, 0);
-      auto bottom_left = Matrix(dist, len1, 0);
-      auto upper_right = Matrix(dist, 0, len2);
-      auto bottom_right = Matrix(dist, len1, len2);
+      size_t size1 = get_size(n1, m1);
+      size_t size2 = get_size(n1, m2);
+      size_t size3 = get_size(n2, m1);
+      size_t size4 = get_size(n2, m2);
+      size_t psize0 = 0;
+      size_t psize1 = psize0 + size1;
+      size_t psize2 = psize1 + size2;
+      size_t psize3 = psize2 + size3;
+      size_t psize4 = psize3 + size4;
+      auto UL = _dist.cut(psize0, psize1);
+      auto UR = _dist.cut(psize1, psize2);
+      auto LL = _dist.cut(psize2, psize3);
+      auto LR = _dist.cut(psize3, psize4);
+
       par_do(
           [&]() {
-            par_do([&]() { solve_r(i, n1, j, m1, upper_left, theta, tmp, dp); },
-                   [&]() {
-                     solve_r(i + n1, n2, j, m1, bottom_left,
-                             Matrix(theta, len3, 0), Matrix(tmp, len5, 0), dp);
-                   });
+            par_do(
+                [&]() {
+                  solve_r(i, n1, j, m1, UL, _theta.cut(psize0, psize1),
+                          _tmp.cut(psize0, psize1));
+                },
+                [&]() {
+                  solve_r(i, n1, j + m1, m2, UR, _theta.cut(psize1, psize2),
+                          _tmp.cut(psize1, psize2));
+                });
           },
           [&]() {
             par_do(
                 [&]() {
-                  solve_r(i, n1, j + m1, m2, upper_right,
-                          Matrix(theta, 0, len4), Matrix(tmp, 0, len6), dp);
+                  solve_r(i + n1, n2, j, m1, LL, _theta.cut(psize2, psize3),
+                          _tmp.cut(psize2, size3));
                 },
                 [&]() {
-                  solve_r(i + n1, n2, j + m1, m2, bottom_right,
-                          Matrix(theta, len3, len4), Matrix(tmp, len5, len6),
-                          dp);
+                  solve_r(i + n1, n2, j + m1, m2, LR,
+                          _theta.cut(psize3, psize4), _tmp.cut(psize3, psize4));
                 });
           });
+
+      auto theta1 = _theta.cut(psize0, psize2);
+      auto theta2 = _theta.cut(psize2, psize4);
+      auto theta3 = _theta.cut(psize0, psize4);
+      auto tmp1 = _tmp.cut(psize0, psize2);
+      auto tmp2 = _tmp.cut(psize2, psize4);
+
       par_do(
           [&]() {
-            merge_vertical(upper_left, bottom_left, Matrix(tmp, 0, 0), theta,
-                           n1 + m1 + 1, n2 + m1 + 1, m1);
+            merge_horizontal(UL, UR, tmp1, theta1, n1 + m1 + 1, n1 + m2 + 1,
+                             n1);
           },
           [&]() {
-            merge_vertical(upper_right, bottom_right, Matrix(tmp, 0, len6),
-                           Matrix(theta, 0, len4), n1 + m2 + 1, n2 + m2 + 1,
-                           m2);
+            merge_horizontal(LL, LR, tmp2, theta2, n2 + m1 + 1, n2 + m2 + 1,
+                             n2);
           });
-      merge_horizontal(Matrix(tmp, 0, 0), Matrix(tmp, 0, len6), dist, theta,
-                       n + m1 + 1, n + m2 + 1, n);
+      merge_vertical(tmp1, tmp2, _dist, theta3, n1 + m + 1, n2 + m + 1, m);
     }
+    // printf("i: %zu, j: %zu, n: %zu, m: %zu\n", i, j, n, m);
+    // for (size_t x = 0; x < n + m + 1; x++) {
+    // for (size_t y = 0; y < n + m + 1; y++) {
+    // printf("%10u ", dist[x][y]);
+    //}
+    // puts("");
+    //}
+    // puts("");
+    return dist[n][m];
   }
 
   size_t solve() {
@@ -375,60 +568,14 @@ class DAC_MM {
     } else if (m == 0) {
       return n;
     }
+    // printf("n: %zu, m: %zu, size: %zu\n", n, m, get_size(n, m));
 
-    // DP for matrix size
-    auto dp = sequence<
-        sequence<tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>(
-        n + 1,
-        sequence<tuple<size_t, size_t, size_t, size_t, size_t, size_t>>(m + 1));
-    for (size_t i = 1; i <= n; i++) {
-      for (size_t j = 1; j <= m; j++) {
-        if (i == 1 && j == 1) {
-          dp[i][j] = make_tuple(3, 3, 3, 3, 4, 4);
-        } else if (i == 1) {
-          auto [n1, m1, u1, v1, p1, q1] = dp[i][(j + 1) / 2];
-          auto [n2, m2, u2, v2, p2, q2] = dp[i][j / 2];
-          dp[i][j] =
-              make_tuple(max(n1, n2), m1 + m2, max(u1 + u2, (j + 1) / 2 + 2),
-                         max(v1 + v2, j / 2 + 2), max(p1 + p2, i + j + 1),
-                         max(q1 + q2, i + j + 1));
-        } else if (j == 1) {
-          auto [n1, m1, u1, v1, p1, q1] = dp[(i + 1) / 2][j];
-          auto [n2, m2, u2, v2, p2, q2] = dp[i / 2][j];
-          dp[i][j] =
-              make_tuple(n1 + n2, max(m1, m2), max(u1 + u2, (i + 1) / 2 + 2),
-                         max(v1 + v2, i / 2 + 2), max(p1 + p2, i + j + 1),
-                         max(q1 + q2, i + j + 1));
-        } else {
-          auto [n1, m1, u1, v1, p1, q1] = dp[(i + 1) / 2][(j + 1) / 2];
-          auto [n2, m2, u2, v2, p2, q2] = dp[i / 2][(j + 1) / 2];
-          auto [n3, m3, u3, v3, p3, q3] = dp[(i + 1) / 2][j / 2];
-          auto [n4, m4, u4, v4, p4, q4] = dp[i / 2][j / 2];
-          auto p = max(n1, n3) + max(n2, n4);
-          auto q = max(m1, m2) + max(m3, m4);
-          auto w = max({max(u1, u3) + max(u2, u4),
-                        (i + 1) / 2 + (j + 1) / 2 + 1, i + (j + 1) / 2 + 1});
-          auto x = max(
-              {max(v1, v2) + max(v3, v4), i / 2 * 2 + j + 2, i + j / 2 + 1});
-          auto y = max(max(p1, p3) + max(p2, p4), i + (j + 1) / 2 + 1);
-          auto z = max(max(q1, q2) + max(q3, q4), i + j / 2 + 1);
-          dp[i][j] = make_tuple(p, q, w, x, y, z);
-        }
-        std::get<0>(dp[i][j]) = max(std::get<0>(dp[i][j]), i + j + 1);
-        std::get<1>(dp[i][j]) = max(std::get<1>(dp[i][j]), i + j + 1);
-      }
-    }
-
-    auto [N1, N2, N3, N4, N5, N6] = dp[n][m];
-    auto dist =
-        sequence<sequence<s_size_t>>(N1, sequence<s_size_t>(N2, MAX_VAL));
-    auto theta =
-        sequence<sequence<s_size_t>>(N3, sequence<s_size_t>::uninitialized(N4));
-    auto tmp =
-        sequence<sequence<s_size_t>>(N5, sequence<s_size_t>(N6, MAX_VAL));
-    solve_r(0, n, 0, m, Matrix(dist, 0, 0), Matrix(theta, 0, 0),
-            Matrix(tmp, 0, 0), dp);
-    return dist[n][m];
+    size_t size = get_size(n, m);
+    auto dist = sequence<s_size_t>(size, MAX_VAL);
+    auto theta = sequence<s_size_t>::uninitialized(size);
+    auto tmp = sequence<s_size_t>(size, MAX_VAL);
+    return solve_r(0, n, 0, m, make_slice(dist), make_slice(theta),
+                   make_slice(tmp));
   }
 };
 

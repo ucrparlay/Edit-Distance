@@ -80,11 +80,11 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size)
 // function to build the two tables. `n` is
 // the length of the initial sequence size.
 template <typename T>
-void construct_table(T A, T B, vector<vector<int>> &table_A,
-                     vector<vector<int>> &table_B, vector<int> &prefix_a,
-                     vector<int> &prefix_b, vector<int> &suffix_a,
-                     vector<int> &suffix_b,
-                     vector<int> &auxiliary_single_power_table, size_t n)
+size_t construct_table(T A, T B, vector<vector<int>> &table_A,
+                       vector<vector<int>> &table_B, vector<int> &prefix_a,
+                       vector<int> &prefix_b, vector<int> &suffix_a,
+                       vector<int> &suffix_b,
+                       vector<int> &auxiliary_single_power_table, size_t n)
 {
   // logn
   size_t BLOCK_SIZE = mylog2(n);
@@ -104,8 +104,9 @@ void construct_table(T A, T B, vector<vector<int>> &table_A,
     block_power_table.push_back(mypower(PRIME_BASE, i));
   }
 
-  auxiliary_single_power_table.resize(n);
-  parlay::parallel_for(0, n, [&](int i)
+  size_t aux_size = std::max(table_A[0].size() * BLOCK_SIZE, table_B[0].size() * BLOCK_SIZE);
+  auxiliary_single_power_table.resize(aux_size);
+  parlay::parallel_for(0, aux_size, [&](int i)
                        { auxiliary_single_power_table[i] = mypower(PRIME_BASE, i); });
 
   int a_actual_size = BLOCK_SIZE * int(A.size() / BLOCK_SIZE);
@@ -142,20 +143,22 @@ void construct_table(T A, T B, vector<vector<int>> &table_A,
                                        k - 1] *
           int(B[k]);
     } });
+  return BLOCK_SIZE;
 }
 
 bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
                  vector<vector<int>> &table_B, vector<int> &S_A,
                  vector<int> &P_A, vector<int> &S_B, vector<int> &P_B,
-                 vector<int> &aux_power_table)
+                 vector<int> &aux_power_table,
+                 int t)
 {
-  size_t t = S_A.size() / table_A[0].size(); // block_size
+  // size_t t = S_A.size() / table_A[0].size(); // block_size
   if (t == 0)
   {
     return false;
   }
-  if (p + t * mypower(2, z) >= table_A[0].size() * t ||
-      q + t * mypower(2, z) >= table_B[0].size() * t)
+  if ((p + (1 << z) * t) >= table_A[0].size() * t ||
+      (q + (1 << z) * t) >= table_B[0].size() * t)
   {
     return false;
   }
@@ -175,7 +178,7 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
   else if (z != 0)
   {
     hash_a_v = S_A[p] * aux_power_table[(1 << z) * t - rest_A_size] +
-               (table_A[z][next_block_A]) - S_A[p + 1 << z] / aux_power_table[rest_A_size];
+               (table_A[z][next_block_A]) - S_A[p + (1 << z) * t] / aux_power_table[rest_A_size];
   }
   else
   {
@@ -189,7 +192,7 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
   else if (z != 0)
   {
     hash_b_v = S_B[q] * aux_power_table[(1 << z) * t - rest_B_size] +
-               (table_B[z][next_block_B]) - S_B[q + 1 << z] / aux_power_table[rest_B_size];
+               (table_B[z][next_block_B]) - S_B[q + (1 << z) * t] / aux_power_table[rest_B_size];
   }
   else
   {
@@ -205,7 +208,8 @@ template <typename T>
 int block_query_lcp(int p, int q, T A, T B, vector<vector<int>> &table_A,
                     vector<vector<int>> &table_B, vector<int> &S_A,
                     vector<int> &P_A, vector<int> &S_B, vector<int> &P_B,
-                    vector<int> &aux_power_table)
+                    vector<int> &aux_power_table,
+                    int t)
 {
   // find the possible block range point (omit the offset first)
   if (A[p] != B[q])
@@ -213,18 +217,19 @@ int block_query_lcp(int p, int q, T A, T B, vector<vector<int>> &table_A,
     return 0;
   }
   int x = 0;
-  size_t t = S_A.size() / table_A[0].size(); // block_size
+  // size_t t = S_A.size() / table_A[0].size(); // block_size
   while ((p + t * mypower(2, x) < table_A[0].size() * t) &&
          (q + t * mypower(2, x) < table_B[0].size() * t))
   {
     if (!compare_lcp(p, q, x, table_A, table_B, S_A, P_A, S_B, P_B,
-                     aux_power_table))
+                     aux_power_table, t))
     {
       break;
     }
     x++;
   }
-  int pp, qq;
+  int pp = p;
+  int qq = q;
   //    x -= 1; // now the x is the minimum LCP,
   // and the real lcp should locate in x and x + 1 block range
   if (x > 0)
@@ -235,7 +240,7 @@ int block_query_lcp(int p, int q, T A, T B, vector<vector<int>> &table_A,
     while (y >= 0)
     {
       if (compare_lcp(pp, qq, y, table_A, table_B, S_A, P_A, S_B, P_B,
-                      aux_power_table))
+                      aux_power_table, t))
       {
         pp += t * mypower(2, y);
         qq += t * mypower(2, y);

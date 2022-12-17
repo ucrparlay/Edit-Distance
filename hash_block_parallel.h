@@ -2,8 +2,6 @@
 #define hash_block_parallel_hpp
 
 #include "utils.h"
-#define FASTLOG2(X) \
-  ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((X)) - 1))
 using namespace std;
 
 // auxiliary function for log
@@ -78,7 +76,7 @@ size_t construct_table(T A, T B, vector<vector<int>> &table_A,
                        vector<int> &suffix_b,
                        vector<int> &auxiliary_single_power_table, size_t n) {
   // logn
-  size_t BLOCK_SIZE = mylog2(n);
+  size_t BLOCK_SIZE = FASTLOG2(n);
   // build the powertable
   if (BLOCK_SIZE == 0) {
     BLOCK_SIZE = 1;

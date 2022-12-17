@@ -3,6 +3,7 @@
 
 #include "utils.h"
 #define ull unsigned long long
+#define FASTLOG2(X) ((unsigned) (8*sizeof (unsigned long long) - __builtin_clzll((X)) - 1))
 using namespace std;
 
 // Function for building two sparse hash tables for sequences A and B
@@ -21,16 +22,18 @@ void build_hash_table(const parlay::sequence<T> &s1,
   size_t table2_d2 = s2.size();
   size_t table1_d1 = 0;
   size_t table2_d1 = 0;
-  int upp1 = 1;
-  int upp2 = 1;
-  while (upp1 <= table1_d2) {
-    table1_d1++;
-    upp1 *= 2;
-  }
-  while (upp2 <= table2_d2) {
-    table2_d1++;
-    upp2 *= 2;
-  }
+  // int upp1 = 1;
+  // int upp2 = 1;
+  // while (upp1 <= table1_d2) {
+  //   table1_d1++;
+  //   upp1 *= 2;
+  // }
+  // while (upp2 <= table2_d2) {
+  //   table2_d1++;
+  //   upp2 *= 2;
+  // }
+  table1_d1 = FASTLOG2(table1_d2) + 1;
+  table2_d1 = FASTLOG2(table2_d2) + 1;
   // initialize size
   table_s1.resize(table1_d1);
   table_s2.resize(table2_d1);

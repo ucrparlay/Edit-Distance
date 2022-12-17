@@ -6,8 +6,8 @@ template <typename Seq>
 int EditDistanceBlockHashParallel(const Seq &a, const Seq &b)
 {
   // build sparse table
-  size_t n = a.size();
-  size_t m = b.size();
+  int n = a.size();
+  int m = b.size();
   if (n == 0)
     return m;
   if (m == 0)

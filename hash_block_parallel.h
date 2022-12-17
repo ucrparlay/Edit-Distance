@@ -61,7 +61,7 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
 // function to build the two tables. `n` is
 // the length of the initial sequence size.
 template <typename T>
-size_t construct_table(T A, T B, vector<vector<int>> &table_A,
+size_t construct_table(T& A, T& B, vector<vector<int>> &table_A,
                        vector<vector<int>> &table_B, vector<int> &suffix_a,
                        vector<int> &suffix_b,
                        vector<int> &auxiliary_single_power_table, size_t n) {
@@ -135,18 +135,7 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
   size_t rest_B_size = next_block_B * t - q;
   int hash_a_v;
   int hash_b_v;
-  // A_hash_v = S_A[p] * p^{?} + Table_A[z][next_A] * p^{?} + P_A[nextA * t +
-  // rest_B] need pre-computed prefix and suffix
 
-  // if (p % t == 0) {
-  //   hash_a_v = table_A[z][p / t];
-  // } else if (z != 0) {
-  //   hash_a_v = S_A[p] * aux_power_table[(1 << z) * t - rest_A_size] +
-  //              (table_A[z][next_block_A]) -
-  //              S_A[p + (1 << z) * t] / aux_power_table[rest_A_size];
-  // } else {
-  //   hash_a_v = S_A[p] * aux_power_table[t - rest_A_size] + P_A[p + t - 1];
-  // }
   if (p % t == 0) {
     hash_a_v = table_A[z][p / t];
   } else {

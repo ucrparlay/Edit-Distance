@@ -84,10 +84,11 @@ size_t construct_table(T A, T B, vector<vector<int>> &table_A,
   size_t aux_size =
       std::max(table_A[0].size() * BLOCK_SIZE, table_B[0].size() * BLOCK_SIZE);
   auxiliary_single_power_table.resize(aux_size);
-  parlay::parallel_for(0, aux_size, [&](int i) {
-    auxiliary_single_power_table[i] = mypower(PRIME_BASE, i);
-  });
-
+  auxiliary_single_power_table[0] = 1;
+  for (int i = 1; i < aux_size; i++) {
+    auxiliary_single_power_table[i] =
+        PRIME_BASE * auxiliary_single_power_table[i - 1];
+  };
   int a_actual_size = BLOCK_SIZE * int(A.size() / BLOCK_SIZE);
   int b_actual_size = BLOCK_SIZE * int(B.size() / BLOCK_SIZE);
   // prefix_a.resize(a_actual_size);
@@ -209,7 +210,8 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
     qq = q;
   }
 
-  while (pp < (int)(A.size()) && qq < (int)(B.size()) && (int(A[pp]) == int(B[qq]))) {
+  while (pp < (int)(A.size()) && qq < (int)(B.size()) &&
+         (int(A[pp]) == int(B[qq]))) {
     pp++;
     qq++;
   }

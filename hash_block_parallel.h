@@ -1,8 +1,6 @@
 #ifndef hash_block_parallel_hpp
 #define hash_block_parallel_hpp
 
-#include <chrono>
-
 #include "utils.h"
 using namespace std;
 
@@ -19,14 +17,12 @@ static size_t mylog2(size_t val) {
 
 // auxiliary function for power x^p
 int mypower(int x, int p) {
-  if (p == 0)
-    return 1;
-  else if (p % 2 == 0)
-    return mypower(x, p / 2) * mypower(x, p / 2);
-  else
-    return p * mypower(x, p / 2) * mypower(x, p / 2);
+  int res = 1;
+  for (int i = 0; i < p; i++) {
+    res *= x;
+  }
+  return res;
 }
-
 
 // build a table
 template <typename T>
@@ -35,11 +31,9 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
   // pre-computed power table [p^(block_size), p^(2 * block_size), ... p^(logk *
   // block_size)]
   vector<int> block_power_table;
-
   for (int i = 0; i < mylog2(k); i++) {
     block_power_table.push_back(mypower(PRIME_BASE, int(block_size * (i + 1))));
   }
-
   table_seq.resize(mylog2(k) + 1);
   // pre-computed log table [1, 2, 4, ..., logk]
   vector<int> block_log_table;
@@ -48,23 +42,21 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
   }
 
   // for the first dim of the table
-  vector<int> aux_inside_blk_table;
-  aux_inside_blk_table.resize(block_size);
-  for (int i = 0; i < block_size; i++) {
-    aux_inside_blk_table[i] = mypower(PRIME_BASE, i);
+  vector<int> aux_inside_block_table;
+  for (int i = 0; i <= block_size; i++) {
+    aux_inside_block_table.push_back(mypower(PRIME_BASE, i));
   }
   table_seq[0].resize(k);
   parlay::parallel_for(0, k, [&](int j) {
     // table_seq[0][j] = hash_value(seq, j * block_size, (j + 1) * block_size -
-    // 1,
-    //                              aux_inside_blk_table);
+    // 1);
     table_seq[0][j] = 0;
-    for (int b_i = j * block_size; b_i < (j + 1) * block_size; b_i++) {
+    for (int b_j = j * block_size; b_j <= (j + 1) * block_size - 1; b_j++) {
       table_seq[0][j] +=
-          int(seq[b_i]) * aux_inside_blk_table[(j + 1) * block_size - b_i - 1];
+          (aux_inside_block_table[(j + 1) * block_size - 1 - b_j] *
+           (int)seq[b_j]);
     }
   });
-
   // for the remaining dims of the table
   for (int i = 1; i < mylog2(k) + 1; i++) {
     table_seq[i].resize(k - block_log_table[i] + 1);
@@ -88,7 +80,6 @@ size_t construct_table(T A, T B, vector<vector<int>> &table_A,
   if (BLOCK_SIZE == 0) {
     BLOCK_SIZE = 1;
   }
-
   build(A, table_A, BLOCK_SIZE);
   build(B, table_B, BLOCK_SIZE);
 
@@ -102,15 +93,9 @@ size_t construct_table(T A, T B, vector<vector<int>> &table_A,
   size_t aux_size =
       std::max(table_A[0].size() * BLOCK_SIZE, table_B[0].size() * BLOCK_SIZE);
   auxiliary_single_power_table.resize(aux_size);
-  auxiliary_single_power_table[0] = 1;
-  for (int i = 1; i < aux_size; i++) {
-    auxiliary_single_power_table[i] =
-        PRIME_BASE * auxiliary_single_power_table[i - 1];
-  };
-
-  // parlay::parallel_for(0, aux_size, [&](int i)
-  //                      { auxiliary_single_power_table[i] =
-  //                      mypower(PRIME_BASE, i); });
+  parlay::parallel_for(0, aux_size, [&](int i) {
+    auxiliary_single_power_table[i] = mypower(PRIME_BASE, i);
+  });
 
   int a_actual_size = BLOCK_SIZE * int(A.size() / BLOCK_SIZE);
   int b_actual_size = BLOCK_SIZE * int(B.size() / BLOCK_SIZE);
@@ -120,10 +105,6 @@ size_t construct_table(T A, T B, vector<vector<int>> &table_A,
   suffix_b.resize(b_actual_size);
 
   parlay::parallel_for(0, a_actual_size, [&](int i) {
-    // prefix_a[i] = 0;
-    // for (int j = int(BLOCK_SIZE) * (i / BLOCK_SIZE); j <= i; j++) {
-    //   prefix_a[i] += auxiliary_single_power_table[i - j] * int(A[j]);
-    // }
     suffix_a[i] = 0;
     for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++) {
       suffix_a[i] +=
@@ -134,10 +115,6 @@ size_t construct_table(T A, T B, vector<vector<int>> &table_A,
   });
 
   parlay::parallel_for(0, b_actual_size, [&](int i) {
-    // prefix_b[i] = 0;
-    // for (int j = int(BLOCK_SIZE) * (i / BLOCK_SIZE); j <= i; j++) {
-    //   prefix_b[i] += auxiliary_single_power_table[i - j] * int(B[j]);
-    // }
     suffix_b[i] = 0;
     for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++) {
       suffix_b[i] +=

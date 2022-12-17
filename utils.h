@@ -27,4 +27,7 @@
 const int PRIME_BASE = 379;
 // const int PRIME_BASE = 631;
 
+#define FASTLOG2(X) \
+  ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((X)) - 1))
+
 #endif /* utils_h */

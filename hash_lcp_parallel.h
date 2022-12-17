@@ -98,7 +98,8 @@ void build_hash_table(const parlay::sequence<T> &s1,
 //    auto lcp(Seq1 const &s, Seq2 const &SA);
 int query_lcp(vector<vector<int>> &table1, vector<vector<int>> &table2,
               vector<int> &logN1, vector<int> &logN2, int i, int j) {
-  if (i == table1[0].size() || j == table2[0].size()) return 1;
+  if (i >= (table1[0].size()) || j >= (table2[0].size())) return 0;
+  if (i == (table1[0].size()) || j == (table2[0].size())) return 1;
   if (table1[0][i] != table2[0][j]) return 0;
   // possible value is from 0 to the smaller one of the remaining sequences
   int max_range = std::min(table1[0].size() - i, table2[0].size() - j);

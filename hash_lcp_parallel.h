@@ -39,14 +39,14 @@ void build_hash_table(const parlay::sequence<T> &s1,
                        [&](int j) { table_s2[0][j] = int(s2[j]); });
   int len = 1;
   powerN1[0] = 1;
-  for (int i = 0; i < table1_d1; i++) {
+  for (size_t i = 0; i < table1_d1; i++) {
     logN1[i] = len;
     len *= 2;
     powerN1[i + 1] = PRIME_BASE * powerN1[i];
   }
   len = 1;
   powerN2[0] = 1;
-  for (int i = 0; i < table2_d1; i++) {
+  for (size_t i = 0; i < table2_d1; i++) {
     logN2[i] = len;
     len *= 2;
     powerN2[i + 1] = PRIME_BASE * powerN2[i];
@@ -54,7 +54,7 @@ void build_hash_table(const parlay::sequence<T> &s1,
 
   // build the second to k-th layer
   if (table1_d1 > 1) {
-    for (int i = 1; i < table1_d1; i++) {
+    for (size_t i = 1; i < table1_d1; i++) {
       table_s1[i].resize(table1_d2 - logN1[i] + 1);
       parlay::parallel_for(0, table1_d2 - logN1[i] + 1, [&](int j) {
         // for (int pw = 0; pw < logN1[i - 1]; pw++) {
@@ -67,7 +67,7 @@ void build_hash_table(const parlay::sequence<T> &s1,
     }
   }
   if (table2_d1 > 1) {
-    for (int i = 1; i < table2_d1; i++) {
+    for (size_t i = 1; i < table2_d1; i++) {
       table_s2[i].resize(table2_d2 - logN2[i] + 1);
       parlay::parallel_for(0, table2_d2 - logN2[i] + 1, [&](int j) {
         // for (int pw = 0; pw < logN2[i - 1]; pw++) {
@@ -90,8 +90,8 @@ void build_hash_table(const parlay::sequence<T> &s1,
 //    auto lcp(Seq1 const &s, Seq2 const &SA);
 int query_lcp(vector<vector<int>> &table1, vector<vector<int>> &table2,
               vector<int> &logN1, vector<int> &logN2, int i, int j) {
-  if (i >= (table1[0].size()) || j >= (table2[0].size())) return 0;
-  if (i == (table1[0].size()) || j == (table2[0].size())) return 1;
+  if (i >= (int)(table1[0].size()) || j >= (int)(table2[0].size())) return 0;
+  if (i == (int)(table1[0].size()) || j == (int)(table2[0].size())) return 1;
   if (table1[0][i] != table2[0][j]) return 0;
   // possible value is from 0 to the smaller one of the remaining sequences
   int max_range = std::min(table1[0].size() - i, table2[0].size() - j);

@@ -4,17 +4,6 @@
 #include "utils.h"
 using namespace std;
 
-// auxiliary function for log
-static size_t mylog2(size_t val) {
-  if (val == 1 || val == 0) return 0;
-  unsigned int ret = 0;
-  while (val > 1) {
-    val >>= 1;
-    ret++;
-  }
-  return ret;
-}
-
 // auxiliary function for power x^p
 int mypower(int x, int p) {
   int res = 1;
@@ -134,8 +123,8 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
   if (t == 0) {
     return false;
   }
-  if ((p + (1 << z) * t) >= table_A[0].size() * t ||
-      (q + (1 << z) * t) >= table_B[0].size() * t) {
+  if ((p + (1 << z) * t) >= (int)(table_A[0].size() * t) ||
+      (q + (1 << z) * t) >= (int)(table_B[0].size() * t)) {
     return false;
   }
   int next_block_A = (p / t) + 1;

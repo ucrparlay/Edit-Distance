@@ -2,6 +2,8 @@
 #define hash_block_parallel_hpp
 
 #include "utils.h"
+#define FASTLOG2(X) \
+  ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((X)) - 1))
 using namespace std;
 
 // auxiliary function for log
@@ -30,14 +32,15 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
   size_t k = seq.size() / block_size;
   // pre-computed power table [p^(block_size), p^(2 * block_size), ... p^(logk *
   // block_size)]
+  int LOG2_k = FASTLOG2(k);
   vector<int> block_power_table;
-  for (int i = 0; i < mylog2(k); i++) {
+  for (int i = 0; i < LOG2_k; i++) {
     block_power_table.push_back(mypower(PRIME_BASE, int(block_size * (i + 1))));
   }
-  table_seq.resize(mylog2(k) + 1);
+  table_seq.resize(LOG2_k + 1);
   // pre-computed log table [1, 2, 4, ..., logk]
   vector<int> block_log_table;
-  for (int i = 0; i < mylog2(k) + 1; i++) {
+  for (int i = 0; i < LOG2_k + 1; i++) {
     block_log_table.push_back(1 << i);
   }
 
@@ -58,7 +61,7 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
     }
   });
   // for the remaining dims of the table
-  for (int i = 1; i < mylog2(k) + 1; i++) {
+  for (int i = 1; i < LOG2_k + 1; i++) {
     table_seq[i].resize(k - block_log_table[i] + 1);
     parlay::parallel_for(0, k - block_log_table[i] + 1, [&](int j) {
       table_seq[i][j] = table_seq[i - 1][j] * block_power_table[i - 1] +
@@ -181,6 +184,10 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
                     vector<int> &S_A, vector<int> &S_B,
                     vector<int> &aux_power_table, int t) {
   // find the possible block range point (omit the offset first)
+  if (p >= A.size() || q >= B.size()) {
+    return 0;
+  }
+
   if (A[p] != B[q]) {
     return 0;
   }

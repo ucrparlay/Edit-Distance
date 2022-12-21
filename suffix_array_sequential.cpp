@@ -6,7 +6,7 @@
 
 namespace {
 
-void Prepare(auto& a) {
+void Prepare(std::vector<int>& a) {
   std::vector<int> b = a;
   std::sort(b.begin(), b.end());
   for (int i = 0; i < a.size(); i++) {

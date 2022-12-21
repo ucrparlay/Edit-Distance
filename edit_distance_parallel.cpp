@@ -17,7 +17,10 @@ size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a,
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
   parlay::parallel_for(0, m, [&](int i) { c[i + n + 1] = b[i]; });
   c[n] = std::numeric_limits<uint32_t>::max();
-  auto [rank, sa, lcp] = suffix_array(c);
+  auto rank = parlay::sequence<unsigned int>();
+  auto sa = parlay::sequence<unsigned int>();
+  auto lcp = parlay::sequence<unsigned int>();
+  std::tie(rank, sa, lcp) = suffix_array(c);
   auto rmq = range_min(lcp);
   auto GetLcp = [&](int i, int j) -> int {
     // std::cout << "GetLcp " << i << ' ' << j << '\n';

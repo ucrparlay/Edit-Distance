@@ -45,10 +45,10 @@ class DAC_MM {
                         slice<Iterator, Iterator> _theta, size_t n1, size_t n2,
                         size_t k) {
     size_t n = n1 + n2 - k - 1;
-    auto left = Matrix(_left, n1, n1);
-    auto right = Matrix(_right, n2, n2);
-    auto ret = Matrix(_ret, n, n);
-    auto theta = Matrix(_theta, n1, n2);
+    auto left = Matrix<Iterator>(_left, n1, n1);
+    auto right = Matrix<Iterator>(_right, n2, n2);
+    auto ret = Matrix<Iterator>(_ret, n, n);
+    auto theta = Matrix<Iterator>(_theta, n1, n2);
     if (n < BASE_CASE_SIZE) {
       for (size_t i = 0; i < n1; i++) {
         for (size_t j = 0; j < n1 - k; j++) {
@@ -179,10 +179,10 @@ class DAC_MM {
                       slice<Iterator, Iterator> _theta, size_t n1, size_t n2,
                       size_t k) {
     size_t n = n1 + n2 - k - 1;
-    auto up = Matrix(_up, n1, n1);
-    auto down = Matrix(_down, n2, n2);
-    auto ret = Matrix(_ret, n, n);
-    auto theta = Matrix(_theta, n1, n2);
+    auto up = Matrix<Iterator>(_up, n1, n1);
+    auto down = Matrix<Iterator>(_down, n2, n2);
+    auto ret = Matrix<Iterator>(_ret, n, n);
+    auto theta = Matrix<Iterator>(_theta, n1, n2);
     if (n < BASE_CASE_SIZE) {
       for (size_t i = 0; i < n1; i++) {
         for (size_t j = 0; j < n1 - k; j++) {
@@ -366,9 +366,8 @@ class DAC_MM {
       solve_r(i, n, j, m1, L, _theta.cut(0, size1), _tmp.cut(0, size1));
       solve_r(i, n, j + m1, m2, R, _theta.cut(size1, size1 + size2),
               _tmp.cut(size1, size1 + size2));
-
       merge_horizontal(L, R, _tmp, _theta, n + m1 + 1, n + m2 + 1, n);
-      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
+      auto tmp = Matrix<Iterator>(_tmp, n + m + 1, n + m + 1);
       for (size_t x = 0; x < n + m + 1; x++) {
         for (size_t y = 0; y < n + m + 1; y++) {
           dist[x][y] = tmp[x][y];
@@ -389,7 +388,7 @@ class DAC_MM {
               _tmp.cut(psize1, psize2));
 
       merge_vertical(U, D, _tmp, _theta, n1 + m + 1, n2 + m + 1, m);
-      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
+      auto tmp = Matrix<Iterator>(_tmp, n + m + 1, n + m + 1);
       for (size_t x = 0; x < n + m + 1; x++) {
         for (size_t y = 0; y < n + m + 1; y++) {
           dist[x][y] = tmp[x][y];
@@ -466,7 +465,7 @@ class DAC_MM {
           });
 
       merge_horizontal(L, R, _tmp, _theta, n + m1 + 1, n + m2 + 1, n);
-      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
+      auto tmp = Matrix<Iterator>(_tmp, n + m + 1, n + m + 1);
       parallel_for(0, n + m + 1, [&](size_t x) {
         parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
       });
@@ -490,7 +489,7 @@ class DAC_MM {
           });
 
       merge_vertical(U, D, _tmp, _theta, n1 + m + 1, n2 + m + 1, m);
-      auto tmp = Matrix(_tmp, n + m + 1, n + m + 1);
+      auto tmp = Matrix<Iterator>(_tmp, n + m + 1, n + m + 1);
       parallel_for(0, n + m + 1, [&](size_t x) {
         parallel_for(0, n + m + 1, [&](size_t y) { dist[x][y] = tmp[x][y]; });
       });

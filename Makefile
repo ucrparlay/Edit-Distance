@@ -38,7 +38,7 @@ INCLUDE_DIR = parlaylib/examples/
 
 all : $(ALL)
 
-test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o dac_mm.o
+test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o dac_mm.o minimum_edit_distance.h
 	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o dac_mm.o
 
 

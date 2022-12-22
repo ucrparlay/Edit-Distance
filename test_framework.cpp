@@ -11,7 +11,7 @@
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
-#include "parlaylib/examples/minimum_edit_distance.h"
+#include "minimum_edit_distance.h"
 
 constexpr size_t NUM_TESTS = 6;
 size_t num_rounds = 3;

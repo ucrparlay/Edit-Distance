@@ -32,7 +32,7 @@ const int PRIME_BASE = 379;
 
 // Function to parse a file with single-line string to
 // parlay sequence.
-// Usage: `parse(file_path, destination_variables)`
+// Usage: `parse_string_line(file_path, destination_variables)`
 template <typename T>
 void parse_string_line(const std::string file_name,
                        parlay::sequence<T>& parse_var) {
@@ -48,6 +48,10 @@ void parse_string_line(const std::string file_name,
   }
 }
 
+// Function to parse a file with a text file to
+// parlay::sequence variable, blank lines and
+// white spaces will be omitted
+// Usage: `parse_text_file_with_blank(file_path, destination_variables)`
 template <typename T>
 void parse_text_file_with_blank(const std::string filename,
                                 parlay::sequence<T>& parser_var) {

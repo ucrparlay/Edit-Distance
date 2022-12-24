@@ -11,14 +11,14 @@
 using namespace std;
 
 int main() {
-  int n = 1000000;
-  string s;
+  int n = 1000;
+  vector<int> s(n);
   s.resize(n);
   for (int i = 0; i < n; i++) {
-    s[i] = 'a' + rand() % 2;
+    s[i] = rand() % 200;
   }
   parlay::internal::timer timer1;
-  auto [rank1, sa1, lcp1] = suffix_array(s);
+  auto [rank1, sa1, lcp1] = suffix_array_large_alphabet(s);
   auto t1 = timer1.stop();
   cout << "Parallel time: " << to_string(t1) << endl;
   parlay::internal::timer timer2;

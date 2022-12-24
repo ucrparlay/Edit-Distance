@@ -32,7 +32,7 @@ void SuffixArraySequential::Resort(std::vector<std::array<int, 2>>& key) {
   }
 }
 
-void SuffixArraySequential::Build(const std::string& a_) {
+void SuffixArraySequential::Build(const std::vector<int>& a_) {
   n = a_.size();
   a.resize(n);
   for (int i = 0; i < n; i++) a[i] = a_[i];

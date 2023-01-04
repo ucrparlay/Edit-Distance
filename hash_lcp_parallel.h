@@ -27,10 +27,6 @@ void build_hash_table(const parlay::sequence<T> &s1,
   table_s2.resize(table2_d1);
   table_s1[0].resize(table1_d2);
   table_s2[0].resize(table2_d2);
-  // powerN1.resize(table1_d1 + 1);
-  // powerN2.resize(table2_d1 + 1);
-  // logN1.resize(table1_d1);
-  // logN2.resize(table2_d1);
   // build the first layer of ST in parallel
   parlay::parallel_for(0, table1_d2,
                        [&](int i) { table_s1[0][i] = int(s1[i]); });
@@ -45,25 +41,16 @@ void build_hash_table(const parlay::sequence<T> &s1,
   for (size_t i = 0; i < aux_log_size; i++) {
     logN1[i] = len;
     len *= 2;
-    powerN1[i + 1] = PRIME_BASE * powerN1[i];
   }
-  // len = 1;
-  // powerN2[0] = 1;
-  // for (size_t i = 0; i <= table2_d1; i++) {
-  //   logN2[i] = len;
-  //   len *= 2;
-  //   powerN2[i + 1] = PRIME_BASE * powerN2[i];
-  // }
+  for (size_t i = 0; i < aux_log_size; i++) {
+    powerN1[i + 1] = mypower(PRIME_BASE, logN1[i]);
+  }
 
   // build the second to k-th layer
   if (table1_d1 > 1) {
     for (size_t i = 1; i < table1_d1; i++) {
       table_s1[i].resize(table1_d2 - logN1[i] + 1);
       parlay::parallel_for(0, table1_d2 - logN1[i] + 1, [&](int j) {
-        // for (int pw = 0; pw < logN1[i - 1]; pw++) {
-        //   table_s1[i][j] = table_s1[i - 1][j] * PRIME_BASE;
-        // }
-        // table_s1[i][j] += table_s1[i - 1][j + logN1[i - 1]];
         table_s1[i][j] =
             table_s1[i - 1][j + logN1[i - 1]] + table_s1[i - 1][j] * powerN1[i];
       });
@@ -73,10 +60,6 @@ void build_hash_table(const parlay::sequence<T> &s1,
     for (size_t i = 1; i < table2_d1; i++) {
       table_s2[i].resize(table2_d2 - logN1[i] + 1);
       parlay::parallel_for(0, table2_d2 - logN1[i] + 1, [&](int j) {
-        // for (int pw = 0; pw < logN2[i - 1]; pw++) {
-        //   table_s2[i][j] = table_s2[i - 1][j] * PRIME_BASE;
-        // }
-        // table_s2[i][j] += table_s2[i - 1][j + logN2[i - 1]];
         table_s2[i][j] =
             table_s2[i - 1][j + logN1[i - 1]] + table_s2[i - 1][j] * powerN1[i];
       });
@@ -91,22 +74,21 @@ void build_hash_table(const parlay::sequence<T> &s1,
 //
 // This method is equivalent to function:
 //    auto lcp(Seq1 const &s, Seq2 const &SA);
-int query_lcp(vector<vector<int>> &table1, vector<vector<int>> &table2,
+template <typename T>
+int query_lcp(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
+              vector<vector<int>> &table1, vector<vector<int>> &table2,
               vector<int> &logN1, int i, int j) {
-  if (i >= table1[0].size() || j >= table2[0].size()) {
-    if (i == 0 && j == 0) {
-      printf("here!!!!!!!!!!!!!!!\n");
-    }
+  if (i >= (int)(s1.size()) || j >= (int)(s2.size())) {
+    return 0;
+  }
+
+  if (s1[i] != s2[j]) {
     return 0;
   }
   // if (i == (int)(table1[0].size() - 1) || j == (int)(table2[0].size() - 1))
   //   return 0;
-  if (table1[0][i] != table2[0][j]) {
-    return 0;
-  }
   int ii = i;
   int jj = j;
-  int res = 0;
   int longest_try_power = 0;
   for (int p = 0; p < logN1.size() + 1; p++) {
     if (p >= logN1.size() || ii + logN1[p] - 1 >= table1[0].size() ||
@@ -121,6 +103,7 @@ int query_lcp(vector<vector<int>> &table1, vector<vector<int>> &table2,
   if (longest_try_power == 0) {
     return 1;
   }
+  int res = 0;
   ii += logN1[longest_try_power];
   jj += logN1[longest_try_power];
   res += logN1[longest_try_power];
@@ -137,6 +120,10 @@ int query_lcp(vector<vector<int>> &table1, vector<vector<int>> &table2,
     }
     longest_try_power--;
   }
-  return res;
+  if (res != 0) {
+    return res;
+  } else {
+    return 1;
+  }
 }
 #endif

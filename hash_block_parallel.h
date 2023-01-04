@@ -61,7 +61,7 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
 // function to build the two tables. `n` is
 // the length of the initial sequence size.
 template <typename T>
-size_t construct_table(T& A, T& B, vector<vector<int>> &table_A,
+size_t construct_table(T &A, T &B, vector<vector<int>> &table_A,
                        vector<vector<int>> &table_B, vector<int> &suffix_a,
                        vector<int> &suffix_b,
                        vector<int> &auxiliary_single_power_table, size_t n) {

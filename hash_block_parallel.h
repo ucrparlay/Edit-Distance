@@ -66,7 +66,19 @@ size_t construct_table(T &A, T &B, vector<vector<int>> &table_A,
                        vector<int> &suffix_b,
                        vector<int> &auxiliary_single_power_table, size_t n) {
   // logn
-  int BLOCK_SIZE = FASTLOG2(n);
+
+  /**
+   * standard block size
+   */
+  // int BLOCK_SIZE_UPPER = FASTLOG2(n);
+  // int BLOCK_SIZE = 1;
+  // while (BLOCK_SIZE <= BLOCK_SIZE_UPPER) {
+  //   BLOCK_SIZE *= 2;
+  // }
+  /**
+   * 32 / 64 ?
+   */
+  int BLOCK_SIZE = 32;
   // build the powertable
   if (BLOCK_SIZE == 0) {
     BLOCK_SIZE = 1;

@@ -2,6 +2,7 @@
 #define lcp_parallel_h
 
 #include "utils.h"
+#include "hash_block_parallel.h"
 #define ull unsigned long long
 using namespace std;
 

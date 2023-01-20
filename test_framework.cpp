@@ -14,7 +14,7 @@
 #include "minimum_edit_distance.h"
 
 constexpr size_t NUM_TESTS = 6;
-size_t num_rounds = 3;
+size_t num_rounds = 5;
 
 template <typename T>
 auto generate_strings(size_t n, size_t k, size_t alpha) {
@@ -155,7 +155,24 @@ int main(int argc, char *argv[]) {
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  run_all(A, B);
+  // run_all(A, B, 2);
+  run_all(A, B, 1);
+  run_all(A, B, 5);
+
+  /*
+    for real datasets
+  */
+  // std::string str_A;
+  // std::string str_B;
+  // parse_text_file_with_blank("./data_prep/data/1.txt", A);
+  // parse_text_file_with_blank("./data_prep/data/2.txt", B);
+  // printf("size A: %d\n", A.size());
+  // printf("size B: %d\n", B.size());
+  // run_all(A, B, 0);
+  // run_all(A, B, 1);
+  // run_all(A, B, 2);
+  // run_all(A, B, 5);
+  // run_all(A, B, 3);
 
   return 0;
 }

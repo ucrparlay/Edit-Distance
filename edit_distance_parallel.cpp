@@ -9,9 +9,11 @@
 #include "parlay/sequence.h"
 #include "range_min.h"
 #include "suffix_array_parallel.h"
+#include "utils.h"
 
 size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a,
                                    const parlay::sequence<uint32_t>& b) {
+  Timer tmr;
   int n = a.size(), m = b.size();
   auto c = parlay::sequence<uint32_t>(n + m + 1);
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
@@ -32,6 +34,8 @@ size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a,
     int id = rmq.query(l + 1, r);
     return lcp[id];
   };
+  double building_tm = tmr.elapsed();
+  std::cout << " building time of SA: " << building_tm << std::endl;
 
   auto Diag = [&](int i, int j) { return i - j + m; };
 

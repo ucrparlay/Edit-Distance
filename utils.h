@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdint.h>
 
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -62,4 +63,19 @@ void parse_text_file_with_blank(const std::string filename,
   }
 }
 
+class Timer {
+ public:
+  Timer() { clock_gettime(CLOCK_REALTIME, &beg_); }
+
+  double elapsed() {
+    clock_gettime(CLOCK_REALTIME, &end_);
+    return end_.tv_sec - beg_.tv_sec +
+           (end_.tv_nsec - beg_.tv_nsec) / 1000000000.;
+  }
+
+  void reset() { clock_gettime(CLOCK_REALTIME, &beg_); }
+
+ private:
+  timespec beg_, end_;
+};
 #endif /* utils_h */

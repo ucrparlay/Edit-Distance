@@ -5,6 +5,11 @@
 template <typename Seq>
 int EditDistanceHashParallel(const Seq &a, const Seq &b) {
   // build sparse table
+
+  /**
+   * Record of building time
+   */
+  Timer tmr;
   int n = a.size();
   int m = b.size();
   if (n == 0) {
@@ -13,14 +18,17 @@ int EditDistanceHashParallel(const Seq &a, const Seq &b) {
   if (m == 0) {
     return n;
   }
-  vector<int> logN1;
-  vector<int> powerN1;
-  vector<vector<int>> table_s1;
-  vector<vector<int>> table_s2;
+  parlay::sequence<int> logN1;
+  parlay::sequence<int> powerN1;
+  parlay::sequence<parlay::sequence<int>> table_s1;
+  parlay::sequence<parlay::sequence<int>> table_s2;
 
   build_hash_table(a, b, table_s1, table_s2, powerN1, logN1);
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
+
+  double building_tm = tmr.elapsed();
+  std::cout << " building time of hashing: " << building_tm << std::endl;
   max_row[Diag(0, 0)] = query_lcp(a, b, table_s1, table_s2, logN1, 0, 0);
   // bfs for path
   int k = 0;

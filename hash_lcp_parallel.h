@@ -13,9 +13,10 @@ using namespace std;
 template <typename T>
 void build_hash_table(const parlay::sequence<T> &s1,
                       const parlay::sequence<T> &s2,
-                      vector<vector<int>> &table_s1,
-                      vector<vector<int>> &table_s2, vector<int> &powerN1,
-                      vector<int> &logN1) {
+                      parlay::sequence<parlay::sequence<int>> &table_s1,
+                      parlay::sequence<parlay::sequence<int>> &table_s2,
+                      parlay::sequence<int> &powerN1,
+                      parlay::sequence<int> &logN1) {
   // build the first leaves layer
   size_t table1_d2 = s1.size();
   size_t table2_d2 = s2.size();
@@ -39,12 +40,13 @@ void build_hash_table(const parlay::sequence<T> &s1,
   powerN1.resize(aux_log_size + 1);
   int len = 1;
   powerN1[0] = 1;
+  powerN1[1] = PRIME_BASE;
   for (size_t i = 0; i < aux_log_size; i++) {
     logN1[i] = len;
     len *= 2;
   }
-  for (size_t i = 0; i < aux_log_size; i++) {
-    powerN1[i + 1] = mypower(PRIME_BASE, logN1[i]);
+  for (size_t i = 1; i < aux_log_size; i++) {
+    powerN1[i + 1] = powerN1[i] * powerN1[i];
   }
 
   // build the second to k-th layer
@@ -77,8 +79,9 @@ void build_hash_table(const parlay::sequence<T> &s1,
 //    auto lcp(Seq1 const &s, Seq2 const &SA);
 template <typename T>
 int query_lcp(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
-              vector<vector<int>> &table1, vector<vector<int>> &table2,
-              vector<int> &logN1, int i, int j) {
+              parlay::sequence<parlay::sequence<int>> &table1,
+              parlay::sequence<parlay::sequence<int>> &table2,
+              parlay::sequence<int> &logN1, int i, int j) {
   if (i >= (int)(s1.size()) || j >= (int)(s2.size())) {
     return 0;
   }

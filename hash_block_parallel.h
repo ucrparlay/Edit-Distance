@@ -15,24 +15,25 @@ int mypower(int x, int p) {
 
 // build a table
 template <typename T>
-void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
+void build(const T seq, parlay::sequence<parlay::sequence<int>> &table_seq,
+           size_t block_size) {
   size_t k = seq.size() / block_size;
   // pre-computed power table [p^(block_size), p^(2 * block_size), ... p^(logk *
   // block_size)]
   int LOG2_k = FASTLOG2(k);
-  vector<int> block_power_table;
+  parlay::sequence<int> block_power_table;
   for (int i = 0; i < LOG2_k; i++) {
     block_power_table.push_back(mypower(PRIME_BASE, int(block_size * (i + 1))));
   }
   table_seq.resize(LOG2_k + 1);
   // pre-computed log table [1, 2, 4, ..., logk]
-  vector<int> block_log_table;
+  parlay::sequence<int> block_log_table;
   for (int i = 0; i < LOG2_k + 1; i++) {
     block_log_table.push_back(1 << i);
   }
 
   // for the first dim of the table
-  vector<int> aux_inside_block_table;
+  parlay::sequence<int> aux_inside_block_table;
   for (int i = 0; i <= (int)(block_size); i++) {
     aux_inside_block_table.push_back(mypower(PRIME_BASE, i));
   }
@@ -61,12 +62,27 @@ void build(const T seq, vector<vector<int>> &table_seq, size_t block_size) {
 // function to build the two tables. `n` is
 // the length of the initial sequence size.
 template <typename T>
-size_t construct_table(T &A, T &B, vector<vector<int>> &table_A,
-                       vector<vector<int>> &table_B, vector<int> &suffix_a,
-                       vector<int> &suffix_b,
-                       vector<int> &auxiliary_single_power_table, size_t n) {
+size_t construct_table(T &A, T &B,
+                       parlay::sequence<parlay::sequence<int>> &table_A,
+                       parlay::sequence<parlay::sequence<int>> &table_B,
+                       parlay::sequence<int> &suffix_a,
+                       parlay::sequence<int> &suffix_b,
+                       parlay::sequence<int> &auxiliary_single_power_table,
+                       size_t n) {
   // logn
-  int BLOCK_SIZE = FASTLOG2(n);
+
+  /**
+   * standard block size
+   */
+  // int BLOCK_SIZE_UPPER = FASTLOG2(n);
+  // int BLOCK_SIZE = 1;
+  // while (BLOCK_SIZE <= BLOCK_SIZE_UPPER) {
+  //   BLOCK_SIZE *= 2;
+  // }
+  /**
+   * 32 / 64 ?
+   */
+  int BLOCK_SIZE = 32;
   // build the powertable
   if (BLOCK_SIZE == 0) {
     BLOCK_SIZE = 1;
@@ -76,7 +92,7 @@ size_t construct_table(T &A, T &B, vector<vector<int>> &table_A,
 
   // build the suffix
   // auxiliary power table
-  vector<int> block_power_table;
+  parlay::sequence<int> block_power_table;
   for (int i = 0; i < BLOCK_SIZE; i++) {
     block_power_table.push_back(mypower(PRIME_BASE, i));
   }
@@ -118,9 +134,11 @@ size_t construct_table(T &A, T &B, vector<vector<int>> &table_A,
   return BLOCK_SIZE;
 }
 
-bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
-                 vector<vector<int>> &table_B, vector<int> &S_A,
-                 vector<int> &S_B, vector<int> &aux_power_table, int t) {
+bool compare_lcp(int p, int q, int z,
+                 parlay::sequence<parlay::sequence<int>> &table_A,
+                 parlay::sequence<parlay::sequence<int>> &table_B,
+                 parlay::sequence<int> &S_A, parlay::sequence<int> &S_B,
+                 parlay::sequence<int> &aux_power_table, int t) {
   // size_t t = S_A.size() / table_A[0].size(); // block_size
   if (t == 0) {
     return false;
@@ -158,9 +176,10 @@ bool compare_lcp(int p, int q, int z, vector<vector<int>> &table_A,
 // function for query the lcp from A[p] and B[q]
 template <typename T>
 int block_query_lcp(int p, int q, const T &A, const T &B,
-                    vector<vector<int>> &table_A, vector<vector<int>> &table_B,
-                    vector<int> &S_A, vector<int> &S_B,
-                    vector<int> &aux_power_table, int t) {
+                    parlay::sequence<parlay::sequence<int>> &table_A,
+                    parlay::sequence<parlay::sequence<int>> &table_B,
+                    parlay::sequence<int> &S_A, parlay::sequence<int> &S_B,
+                    parlay::sequence<int> &aux_power_table, int t) {
   // find the possible block range point (omit the offset first)
   if (p >= (int)(A.size()) || q >= (int)(B.size())) {
     return 0;

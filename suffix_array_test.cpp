@@ -3,11 +3,11 @@
 #include <iostream>
 #include <vector>
 
+#include "hash_lcp_parallel.h"
 #include "parlay/internal/get_time.h"
 #include "parlay/parallel.h"
 #include "suffix_array_parallel.h"
 #include "suffix_array_sequential.h"
-#include "hash_lcp_parallel.h"
 
 using namespace std;
 
@@ -40,14 +40,13 @@ int main() {
   // cout << "Sequential time: " << to_string(t2) << endl;
   // cout << "Pass: suffix_array_test" << endl;
 
-  vector<int> logN1;
-  vector<int> powerN1;
-  vector<vector<int>> table_s1;
-  vector<vector<int>> table_s2;
+  parlay::sequence<int> logN1;
+  parlay::sequence<int> powerN1;
+  parlay::sequence<parlay::sequence<int>> table_s1;
+  parlay::sequence<parlay::sequence<int>> table_s2;
   build_hash_table(a, b, table_s1, table_s2, powerN1, logN1);
   std::cout << "hash build done" << std::endl;
   query_lcp(a, b, table_s1, table_s2, logN1, 0, 0);
-
 
   auto c = parlay::sequence<uint32_t>(n + m + 1);
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });

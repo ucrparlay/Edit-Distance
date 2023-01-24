@@ -6,8 +6,13 @@ using namespace parlay;
 
 template <typename T, typename s_size_t = uint32_t>
 class DAC_MM {
+ protected:
   const sequence<T> &A;
   const sequence<T> &B;
+
+  size_t get_pow2(size_t);
+  size_t sqr(size_t);
+  size_t get_size(size_t, size_t);
 
   sequence<sequence<uint32_t>> merge_horizontal(
       sequence<sequence<uint32_t>> &left, sequence<sequence<uint32_t>> &right,

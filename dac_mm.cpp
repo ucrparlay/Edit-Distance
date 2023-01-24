@@ -251,31 +251,37 @@ class DAC_MM {
       theta[i][j] = mn_p;
     };
     auto compute_odd_even = [&](size_t p, size_t q) {
-      for (size_t i = p; i < n1; i += p * 2) {
-        for (size_t j = 0; j < n2; j += q * 2) {
-          size_t s = theta[i - p][j];
-          size_t t = i + p >= n1 ? k : theta[i + p][j];
-          compute(i, j, s, t);
-        }
-      }
+      parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
+        parallel_for(0, (n2 - 1) / (q * 2) + 1, [&](size_t j) {
+          size_t x = p * (2 * i + 1);
+          size_t y = q * (2 * j);
+          size_t s = theta[x - p][y];
+          size_t t = x + p >= n1 ? k : theta[x + p][y];
+          compute(x, y, s, t);
+        });
+      });
     };
     auto compute_even_odd = [&](size_t p, size_t q) {
-      for (size_t i = 0; i < n1; i += p * 2) {
-        for (size_t j = q; j < n2; j += q * 2) {
-          size_t s = theta[i][j - q];
-          size_t t = j + q >= n2 ? k : theta[i][j + q];
-          compute(i, j, s, t);
-        }
-      }
+      parallel_for(0, (n1 - 1) / (p * 2) + 1, [&](size_t i) {
+        parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
+          size_t x = p * (2 * i);
+          size_t y = q * (2 * j + 1);
+          size_t s = theta[x][y - q];
+          size_t t = y + q >= n2 ? k : theta[x][y + q];
+          compute(x, y, s, t);
+        });
+      });
     };
     auto compute_odd_odd = [&](size_t p, size_t q) {
-      for (size_t i = p; i < n1; i += p * 2) {
-        for (size_t j = q; j < n2; j += q * 2) {
-          size_t s = theta[i][j - q];
-          size_t t = j + q >= n2 ? k : theta[i][j + q];
-          compute(i, j, s, t);
-        }
-      }
+      parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
+        parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
+          size_t x = p * (2 * i + 1);
+          size_t y = q * (2 * j + 1);
+          size_t s = theta[x][y - q];
+          size_t t = y + q >= n2 ? k : theta[x][y + q];
+          compute(x, y, s, t);
+        });
+      });
     };
     size_t p = get_pow2(n1), q = get_pow2(n2);
     compute(0, 0, 0, k);

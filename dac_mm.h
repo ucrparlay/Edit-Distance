@@ -15,15 +15,12 @@ class DAC_MM {
   size_t get_size(size_t, size_t);
 
   sequence<sequence<uint32_t>> merge_horizontal(
-      sequence<sequence<uint32_t>> &left, sequence<sequence<uint32_t>> &right,
+      const sequence<sequence<uint32_t>> &left, const sequence<sequence<uint32_t>> &right,
       size_t k);
 
   sequence<sequence<uint32_t>> merge_vertical(
-      sequence<sequence<uint32_t>> &up, sequence<sequence<uint32_t>> &down,
+      const sequence<sequence<uint32_t>> &up, const sequence<sequence<uint32_t>> &down,
       size_t k);
-
-  void print_matrix(size_t i, size_t n, size_t j, size_t m,
-                    sequence<sequence<uint32_t>> &ret);
 
   sequence<sequence<uint32_t>> solve_r(size_t i, size_t n, size_t j, size_t m);
 

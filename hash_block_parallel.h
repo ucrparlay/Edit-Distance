@@ -74,15 +74,12 @@ size_t construct_table(T &A, T &B,
   /**
    * standard block size
    */
-  // int BLOCK_SIZE_UPPER = FASTLOG2(n);
-  // int BLOCK_SIZE = 1;
-  // while (BLOCK_SIZE <= BLOCK_SIZE_UPPER) {
-  //   BLOCK_SIZE *= 2;
-  // }
+  int BLOCK_SIZE_UPPER = FASTLOG2(n);
+
   /**
    * 32 / 64 ?
    */
-  int BLOCK_SIZE = 32;
+  int BLOCK_SIZE = (BLOCK_SIZE_UPPER <= 32) ? 32 : 64;
   // build the powertable
   if (BLOCK_SIZE == 0) {
     BLOCK_SIZE = 1;

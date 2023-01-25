@@ -1,8 +1,8 @@
 #ifndef lcp_parallel_h
 #define lcp_parallel_h
 
-#include "utils.h"
 #include "hash_block_parallel.h"
+#include "utils.h"
 #define ull unsigned long long
 using namespace std;
 
@@ -89,8 +89,6 @@ int query_lcp(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
   if (s1[i] != s2[j]) {
     return 0;
   }
-  // if (i == (int)(table1[0].size() - 1) || j == (int)(table2[0].size() - 1))
-  //   return 0;
   int ii = i;
   int jj = j;
   int longest_try_power = 0;

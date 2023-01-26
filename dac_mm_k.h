@@ -388,8 +388,7 @@ class DAC_MM_K {
           D = merge_horizontal(LL, LR, min(s2, n2) + 1);
           print_matrix(D, "D");
         });
-
-    auto dist = merge_vertical(U, D, min(s1, m1) + min(s2, m2) + 1);
+    auto dist = merge_vertical(U, D, min(s1, m2) + min(s2, m1) + 1);
     print_matrix(dist, "dist");
     return dist;
   }

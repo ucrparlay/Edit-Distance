@@ -22,7 +22,6 @@ class DAC_MM_K {
   DAC_MM_K(const Seq &_A, const Seq &_B) : A(_A), B(_B) {}
 
   void print_matrix(const sequence<sequence<s_size_t>> &mat, string s = "") {
-    return;
     printf("Matrix %s: ", s.c_str());
     if (mat.size() != 0) {
       printf("%zu by %zu\n", mat.size(), mat[0].size());
@@ -167,7 +166,6 @@ class DAC_MM_K {
       return up;
     }
     size_t n = n1 + n2 - k;
-    // printf("merging n1: %zu, n2: %zu, k: %zu, n: %zu\n", n1, n2, k, n);
     sequence<sequence<s_size_t>> ret(n, sequence<s_size_t>(n, MAX_VAL));
     if (n < BASE_CASE_SIZE) {
       for (size_t i = 0; i < n1; i++) {
@@ -302,11 +300,8 @@ class DAC_MM_K {
   sequence<sequence<s_size_t>> solve_r(size_t i, size_t n, size_t j, size_t m,
                                        size_t k1, size_t k2) {
     if (n / 2 <= k1 || m / 2 <= k2) {
-      // printf(">>>>>>i: %zu, n: %zu, j: %zu, m: %zu, k1: %zu, k2: %zu\n", i,
-      // n, j, m, k1, k2);
       auto tmp = DAC_MM<Seq, s_size_t>(A, B).solve_r(i, n, j, m);
       if (n >= k1 && m >= k2) {
-        // printf("Case 1\n");
         auto dist = sequence<sequence<s_size_t>>(
             k1 + k2 + 1, sequence<s_size_t>(k1 + k2 + 1, MAX_VAL));
         parallel_for(0, k1 + k2 + 1, [&](size_t i) {
@@ -316,7 +311,6 @@ class DAC_MM_K {
         });
         return dist;
       } else if (n >= k1) {
-        // printf("Case 2\n");
         auto dist = sequence<sequence<s_size_t>>(
             k1 + m + 1, sequence<s_size_t>(k1 + m + 1, MAX_VAL));
         parallel_for(0, k1 + m + 1, [&](size_t i) {
@@ -326,7 +320,6 @@ class DAC_MM_K {
         });
         return dist;
       } else if (m >= k2) {
-        // printf("Case 3\n");
         auto dist = sequence<sequence<s_size_t>>(
             n + k2 + 1, sequence<s_size_t>(n + k2 + 1, MAX_VAL));
         parallel_for(0, n + k2 + 1, [&](size_t i) {
@@ -335,21 +328,15 @@ class DAC_MM_K {
         });
         return dist;
       } else {
-        // printf("Case 4\n");
         return tmp;
       }
     }
-    // printf("i: %zu, n: %zu, j: %zu, m: %zu, k1: %zu, k2: %zu\n", i, n, j, m,
-    // k1,
-    // k2);
     bool do_parallel = (n + m + 1 >= BASE_CASE_SIZE);
     size_t n1 = n / 2, n2 = n - n1;
     size_t m1 = m / 2, m2 = m - m1;
 
     size_t s1 = n1 + k2 - m1;
     size_t s2 = m1 + k1 - n1;
-    // printf("n1: %zu, n2: %zu, m1: %zu, m2: %zu, s1: %zu, s2: %zu\n",
-    // n1, n2, m1, m2, s1, s2);
 
     sequence<sequence<s_size_t>> UL, UR, LL, LR, U, D;
     par_do_if(
@@ -359,11 +346,9 @@ class DAC_MM_K {
               do_parallel,
               [&]() {
                 UL = solve_r(i, n1, j, m1, k1, k2);
-                print_matrix(UL, "UL");
               },
               [&]() {
                 UR = solve_t(i + n1 - s1, s1, j + m1, s1, false);
-                print_matrix(UR, "UR");
               });
         },
         [&]() {
@@ -371,25 +356,20 @@ class DAC_MM_K {
               do_parallel,
               [&]() {
                 LL = solve_t(i + n1, s2, j + m1 - s2, s2, true);
-                print_matrix(LL, "LL");
               },
               [&]() {
                 LR = solve_r(i + n1, n2, j + m1, m2, s2, s1);
-                print_matrix(LR, "LR");
               });
         });
     par_do_if(
         do_parallel,
         [&]() {
           U = merge_horizontal(UL, UR, min(s1, n1) + 1);
-          print_matrix(U, "U");
         },
         [&]() {
           D = merge_horizontal(LL, LR, min(s2, n2) + 1);
-          print_matrix(D, "D");
         });
     auto dist = merge_vertical(U, D, min(s1, m2) + min(s2, m1) + 1);
-    print_matrix(dist, "dist");
     return dist;
   }
 
@@ -399,7 +379,6 @@ class DAC_MM_K {
       return DAC_MM<Seq, s_size_t>(A, B).solve();
     } else {
       auto dist = solve_r(0, n, 0, m, k, k);
-      printf("search %zu, return %u\n", k, dist[k][m + k - n]);
       return dist[k][m + k - n];
     }
   }

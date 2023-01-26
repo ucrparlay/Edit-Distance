@@ -18,26 +18,26 @@ constexpr size_t NUM_TESTS = 6;
 size_t num_rounds = 3;
 
 template <typename T>
-auto generate_strings(size_t n, size_t k, size_t alpha) {
+auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
   printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k, alpha);
   parlay::sequence<T> A(n), B(n);
   parlay::parallel_for(
-      0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i) % alpha; });
+      0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha; });
 
   // substitions, insertions, and deletions and roughly equally distributed
   size_t _k = k / 3;
 
   // substitutions
   parlay::parallel_for(0, _k, [&](size_t i) {
-    size_t idx = parlay::hash32(i) % n;
-    B[idx] = parlay::hash32(i + n) % alpha;
+    size_t idx = parlay::hash32(i + seed) % n;
+    B[idx] = parlay::hash32(i + n + seed) % alpha;
   });
 
   // insertions and deletions
   auto pred1 = parlay::delayed_seq<bool>(
-      n, [&](size_t i) { return parlay::hash32_2(i) % n >= _k; });
+      n, [&](size_t i) { return parlay::hash32_2(i + seed) % n >= _k; });
   auto pred2 = parlay::delayed_seq<bool>(
-      n, [&](size_t i) { return parlay::hash32_2(i + n) % n >= _k; });
+      n, [&](size_t i) { return parlay::hash32_2(i + n + seed) % n >= _k; });
   A = pack(A, pred1);
   B = pack(B, pred2);
   return std::make_tuple(A, B);
@@ -162,20 +162,21 @@ int main(int argc, char *argv[]) {
   using Type = uint32_t;
   // for (size_t i = 1; i <= 500; i++) {
   // for (size_t j = 3 * i; j >= 1; j -= 3) {
+  // for (size_t seed = 0; seed < 1; seed++) {
   // printf("i: %zu, j: %zu\n", i, j);
   // parlay::sequence<Type> A, B;
-  // std::tie(A, B) = generate_strings<Type>(i, j, 3 * i);
-  // printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
-  // printf("A: ");
-  // for (size_t k = 0; k < A.size(); k++) {
-  // printf("%u ", A[k]);
-  //}
-  // puts("");
-  // printf("B: ");
-  // for (size_t k = 0; k < B.size(); k++) {
-  // printf("%u ", B[k]);
-  //}
-  // puts("");
+  // std::tie(A, B) = generate_strings<Type>(i, j, 3 * i, seed);
+  ////printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
+  ////printf("A: ");
+  ////for (size_t k = 0; k < A.size(); k++) {
+  ////printf("%u ", A[k]);
+  ////}
+  ////puts("");
+  ////printf("B: ");
+  ////for (size_t k = 0; k < B.size(); k++) {
+  ////printf("%u ", B[k]);
+  ////}
+  ////puts("");
   // size_t v1 = EditDistanceDP<Type>().Solve(A, B);
   // size_t v2 = DAC_MM_K<sequence<Type>>(A, B).solve();
   // if (v1 != v2) {
@@ -185,6 +186,7 @@ int main(int argc, char *argv[]) {
   // return 0;
   //} else {
   // getchar();
+  //}
   //}
   //}
   //}

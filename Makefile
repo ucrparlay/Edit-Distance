@@ -18,7 +18,7 @@ CPPFLAGS += -pthread
 endif
 
 ifdef DEBUG
-CPPFLAGS += -Og -mcx16 -DDEBUG
+CPPFLAGS += -Og -mcx16 -DDEBUG -g
 else ifdef PERF
 CPPFLAGS += -Og -mcx16 -march=native -g
 else ifdef MEMCHECK
@@ -38,8 +38,8 @@ INCLUDE_DIR = parlaylib/examples/
 
 all : $(ALL)
 
-test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o dac_mm.o minimum_edit_distance.h
-	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o dac_mm.o
+test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o minimum_edit_distance.h dac_mm_k.h dac_mm.h
+	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o
 
 
 suffix_array_test : suffix_array_test.o suffix_array_sequential.o
@@ -62,9 +62,6 @@ edit_distance_sequential.o: edit_distance_sequential.h edit_distance_sequential.
 
 edit_distance_parallel.o: edit_distance_parallel.h edit_distance_parallel.cpp
 	$(CC) $(CPPFLAGS) -c edit_distance_parallel.cpp
-
-dac_mm.o: dac_mm.h dac_mm.cpp
-	$(CC) $(CPPFLAGS) -c dac_mm.cpp
 
 clean :
 	rm -f *.o $(ALL)

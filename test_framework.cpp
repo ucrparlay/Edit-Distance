@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "dac_mm.h"
+#include "dac_mm_k.h"
 #include "edit_distance_block_hashing.h"
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
@@ -14,7 +15,7 @@
 #include "minimum_edit_distance.h"
 
 constexpr size_t NUM_TESTS = 6;
-size_t num_rounds = 5;
+size_t num_rounds = 3;
 
 template <typename T>
 auto generate_strings(size_t n, size_t k, size_t alpha) {
@@ -60,6 +61,9 @@ std::string test_name(int id) {
       return "dac_mm";
       break;
     case 5:
+      return "dac_mm_k";
+      break;
+    case 6:
       return "block_hashing";
       break;
     default:
@@ -89,9 +93,12 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         num_edits = minimum_edit_distance(A, B);
         break;
       case 4:
-        num_edits = DAC_MM<uint32_t>(A, B).solve();
+        num_edits = DAC_MM<sequence<uint32_t>>(A, B).solve();
         break;
       case 5:
+        num_edits = DAC_MM_K<sequence<uint32_t>>(A, B).solve();
+        break;
+      case 6:
         num_edits = EditDistanceBlockHashParallel(A, B);
         break;
       default:
@@ -153,10 +160,37 @@ int main(int argc, char *argv[]) {
     alpha = atoi(argv[3]);
   }
   using Type = uint32_t;
+  // for (size_t i = 1; i <= 500; i++) {
+  // for (size_t j = 3 * i; j >= 1; j -= 3) {
+  // printf("i: %zu, j: %zu\n", i, j);
+  // parlay::sequence<Type> A, B;
+  // std::tie(A, B) = generate_strings<Type>(i, j, 3 * i);
+  // printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
+  // printf("A: ");
+  // for (size_t k = 0; k < A.size(); k++) {
+  // printf("%u ", A[k]);
+  //}
+  // puts("");
+  // printf("B: ");
+  // for (size_t k = 0; k < B.size(); k++) {
+  // printf("%u ", B[k]);
+  //}
+  // puts("");
+  // size_t v1 = EditDistanceDP<Type>().Solve(A, B);
+  // size_t v2 = DAC_MM_K<sequence<Type>>(A, B).solve();
+  // if (v1 != v2) {
+  // printf("v1: %zu, v2: %zu\n", v1, v2);
+  // printf("wrong answer\n");
+  // if (A.size() < 20) {
+  // return 0;
+  //} else {
+  // getchar();
+  //}
+  //}
+  //}
+  //}
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  // run_all(A, B, 2);
-  run_all(A, B, 1);
   run_all(A, B, 5);
 
   /*

@@ -55,7 +55,7 @@ auto lcp(Seq1 const &s, Seq2 const &SA) {
   //   -- remain holds indices of the rest of them (i.e., LCP[i] >= offset)
   // After round, offset = 2*offset and invariant holds for the new offset
   do {
-    auto rq = range_min(L, std::less<index>(), 128);
+    auto rq = range_min(L, std::less<index>());
 
     // see if next offset chars resolves LCP
     // set L for those that do, and keep those that do not for next round

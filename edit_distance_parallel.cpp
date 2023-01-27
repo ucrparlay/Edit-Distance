@@ -8,6 +8,7 @@
 
 #include "parlay/sequence.h"
 #include "range_min.h"
+#include "sparse_table_sequential.h"
 #include "suffix_array_parallel.h"
 #include "utils.h"
 
@@ -28,6 +29,11 @@ size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a,
     // std::cout << "GetLcp " << i << ' ' << j << '\n';
     if (i == n || j == m) return 0;
     assert(0 <= i && i < n && 0 <= j && j < m);
+    for (int k = 0; k < 8; k++) {
+      if (i + k >= n || j + k >= m || a[i + k] != b[j + k]) {
+        return k;
+      }
+    }
     int l = rank[i], r = rank[j + n + 1];
     if (l > r) std::swap(l, r);
     assert(l < r);

@@ -21,8 +21,8 @@ template <typename Seq, typename Less = std::less<typename Seq::value_type>,
     typename Uint=unsigned int>
 class range_min {
  public:
-  range_min(Seq &a, Less&& less = {}, long block_size=32)
-      :  a(a), less(less), n(a.size()), block_size(block_size) {
+  range_min(Seq &a, Less&& less = {})
+      :  a(a), less(less), n(a.size()) {
     if (a.size() == 0) return;
     m = 1 + (n-1)/block_size;
     preprocess();
@@ -70,7 +70,8 @@ class range_min {
   Seq &a;
   parlay::sequence<parlay::sequence<Uint>> table;
   Less less;
-  long n, m, depth, block_size;
+  long n, m, depth;
+  const long block_size = 32;
 
   Uint min_index(Uint i, Uint j) const {
     return less(a[j], a[i]) ? j : i;}

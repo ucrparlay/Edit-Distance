@@ -8,13 +8,16 @@ project(
   LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+set(CMAKE_THREAD_LIBS_INIT "-pthread")
 
 add_subdirectory(parlaylib)
 
 option(DEBUG "Debug mode" OFF)
 
+add_compile_options(-pthread)
 if(NOT DEBUG)
   add_compile_options(-Wall -Wextra -O3 -mcx16 -march=native)
 endif()

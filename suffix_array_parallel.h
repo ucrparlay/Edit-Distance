@@ -39,7 +39,7 @@ auto suffix_array(const char_range& S) {
   int granularity = 100; // only effects performance, and not by much
 
   // pack 12 chars starting at each index, and index into two unsigned longs and sort.
-  auto s = [&] (index i) -> index {return (i < n) ? (unsigned char) S[i] : 0;};
+  auto s = [&] (index i) -> index {return (i < n) ? (unsigned char) S[i] + 1 : 0;};
   auto Clx = parlay::delayed_tabulate(n, [&] (ulong i) {
     ulong high = 0, low = 0;
     for (int j=0; j < 8; j++) high = (high << 8) + s(i+j);
@@ -122,7 +122,7 @@ auto suffix_array_large_alphabet(const char_range& S) {
   int granularity = 100; // only effects performance, and not by much
 
   // pack 3 chars starting at each index, and index into two unsigned longs and sort.
-  auto s = [&] (index i) -> index {return (i < n) ? (unsigned int) S[i] : 0;};
+  auto s = [&] (index i) -> index {return (i < n) ? (unsigned int) S[i] + 1 : 0;};
   auto Clx = parlay::delayed_tabulate(n, [&] (ulong i) {
     ulong high = (((ulong) s(i)) << 32) + s(i + 1);
     ulong low = (((ulong) s(i + 2)) << 32) + i;

@@ -13,6 +13,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_THREAD_LIBS_INIT "-pthread")
 
+add_library(edit_distance INTERFACE)
+target_include_directories(edit_distance INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(edit_distance INTERFACE edit_distance_dp edit_distance_parallel suffix_array_sequential)
+
 add_subdirectory(parlaylib)
 
 option(DEBUG "Debug mode" OFF)

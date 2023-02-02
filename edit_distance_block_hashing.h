@@ -17,8 +17,8 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b) {
   if (m == 0) return n;
   parlay::sequence<parlay::sequence<int>> table_A;
   parlay::sequence<parlay::sequence<int>> table_B;
-  parlay::sequence<int> S_A;
-  parlay::sequence<int> S_B;
+  parlay::sequence<std::pair<int, int>> S_A;
+  parlay::sequence<std::pair<int, int>> S_B;
   parlay::sequence<int> aux_table;
   int blk_size = construct_table(a, b, table_A, table_B, S_A, S_B, aux_table,
                                  std::min(n, m));
@@ -26,7 +26,7 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b) {
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 
   double building_tm = tmr.elapsed();
-  std::cout << " building time of block: " << building_tm << std::endl;
+  std::cout << building_tm << ", ";
 
   max_row[Diag(0, 0)] = block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B,
                                         aux_table, blk_size);

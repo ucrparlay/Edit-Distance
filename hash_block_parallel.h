@@ -65,8 +65,8 @@ template <typename T>
 size_t construct_table(T &A, T &B,
                        parlay::sequence<parlay::sequence<int>> &table_A,
                        parlay::sequence<parlay::sequence<int>> &table_B,
-                       parlay::sequence<int> &suffix_a,
-                       parlay::sequence<int> &suffix_b,
+                       parlay::sequence<std::pair<int, int>> &pre_su_a,
+                       parlay::sequence<std::pair<int, int>> &pre_su_b,
                        parlay::sequence<int> &auxiliary_single_power_table,
                        size_t n) {
   // logn
@@ -106,44 +106,60 @@ size_t construct_table(T &A, T &B,
   int b_actual_size = BLOCK_SIZE * int(B.size() / BLOCK_SIZE);
   // prefix_a.resize(a_actual_size);
   // prefix_b.resize(b_actual_size);
-  suffix_a.resize(a_actual_size);
-  suffix_b.resize(b_actual_size);
+  pre_su_a.resize(a_actual_size);
+  pre_su_b.resize(b_actual_size);
 
+  // for both prefix and suffix precomputing
   parlay::parallel_for(0, a_actual_size, [&](int i) {
-    suffix_a[i] = 0;
+    pre_su_a[i].first = 0;
+    pre_su_a[i].second = 0;
     for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++) {
-      suffix_a[i] +=
+      pre_su_a[i].second +=
           auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) -
                                        k - 1] *
           int(A[k]);
     }
+    for (int l = (i / BLOCK_SIZE) * int(BLOCK_SIZE); l <= i; l++) {
+      pre_su_a[i].first += auxiliary_single_power_table[i - l] * int(A[l]);
+    }
   });
 
   parlay::parallel_for(0, b_actual_size, [&](int i) {
-    suffix_b[i] = 0;
+    pre_su_b[i].first = 0;
+    pre_su_b[i].second = 0;
     for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++) {
-      suffix_b[i] +=
+      pre_su_b[i].second +=
           auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) -
                                        k - 1] *
           int(B[k]);
+    }
+    for (int l = (i / BLOCK_SIZE) * int(BLOCK_SIZE); l <= i; l++) {
+      pre_su_b[i].first += auxiliary_single_power_table[i - l] * int(B[l]);
     }
   });
   return BLOCK_SIZE;
 }
 
+template <typename T>
 bool compare_lcp(int p, int q, int z,
                  parlay::sequence<parlay::sequence<int>> &table_A,
                  parlay::sequence<parlay::sequence<int>> &table_B,
-                 parlay::sequence<int> &S_A, parlay::sequence<int> &S_B,
-                 parlay::sequence<int> &aux_power_table, int t) {
+                 parlay::sequence<std::pair<int, int>> &S_A,
+                 parlay::sequence<std::pair<int, int>> &S_B,
+                 parlay::sequence<int> &aux_power_table, int t, const T &A,
+                 const T &B) {
   // size_t t = S_A.size() / table_A[0].size(); // block_size
   if (t == 0) {
     return false;
   }
-  if ((p + (1 << z) * t) >= (int)(table_A[0].size() * t) ||
-      (q + (1 << z) * t) >= (int)(table_B[0].size() * t)) {
+  if ((p + (1 << z) * t + t) >= (int)(table_A[0].size() * t) ||
+      (q + (1 << z) * t + t) >= (int)(table_B[0].size() * t)) {
     return false;
   }
+  // if ((p + (1 << z) * t) >= (int)(A.size()) ||
+  //     (q + (1 << z) * t) >= (int)(B.size())) {
+  //   return false;
+  // }
   int next_block_A = (p / t) + 1;
   int next_block_B = (q / t) + 1;
   size_t rest_A_size = next_block_A * t - p;
@@ -152,19 +168,21 @@ bool compare_lcp(int p, int q, int z,
   int hash_b_v;
 
   if (p % t == 0) {
-    hash_a_v = table_A[z][p / t];
+    hash_a_v =
+        table_A[z][p / t] * aux_power_table[t] + table_A[0][p / t + (1 << z)];
   } else {
-    hash_a_v = S_A[p] * aux_power_table[(1 << z) * t - rest_A_size] +
-               (table_A[z][next_block_A]) -
-               S_A[p + (1 << z) * t] / aux_power_table[rest_A_size];
+    hash_a_v = S_A[p].second * aux_power_table[(1 << z) * t + t] +
+               (table_A[z][next_block_A]) * aux_power_table[t - rest_A_size] +
+               S_A[p + (1 << z) * t + t].first;
   }
 
   if (q % t == 0) {
-    hash_b_v = table_B[z][q / t];
+    hash_b_v =
+        table_B[z][q / t] * aux_power_table[t] + table_B[0][p / t + (1 << z)];
   } else {
-    hash_b_v = S_B[q] * aux_power_table[(1 << z) * t - rest_B_size] +
-               (table_B[z][next_block_B]) -
-               S_B[q + (1 << z) * t] / aux_power_table[rest_B_size];
+    hash_b_v = S_B[q].second * aux_power_table[(1 << z) * t + t] +
+               (table_B[z][next_block_B]) * aux_power_table[t - rest_B_size] +
+               S_B[q + (1 << z) * t + t].first;
   }
   if (hash_a_v == hash_b_v) return true;
   return false;
@@ -175,7 +193,8 @@ template <typename T>
 int block_query_lcp(int p, int q, const T &A, const T &B,
                     parlay::sequence<parlay::sequence<int>> &table_A,
                     parlay::sequence<parlay::sequence<int>> &table_B,
-                    parlay::sequence<int> &S_A, parlay::sequence<int> &S_B,
+                    parlay::sequence<std::pair<int, int>> &S_A,
+                    parlay::sequence<std::pair<int, int>> &S_B,
                     parlay::sequence<int> &aux_power_table, int t) {
   // find the possible block range point (omit the offset first)
   if (p >= (int)(A.size()) || q >= (int)(B.size())) {
@@ -187,28 +206,28 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
   }
   int x = 0;
   // size_t t = S_A.size() / table_A[0].size(); // block_size
-  while ((p + t * mypower(2, x) < (int)(table_A[0].size() * t)) &&
-         (q + t * mypower(2, x) < (int)(table_B[0].size() * t))) {
-    if (!compare_lcp(p, q, x, table_A, table_B, S_A, S_B, aux_power_table, t)) {
+  while ((p + t * mypower(2, x) + t < (int)(table_A[0].size() * t)) &&
+         (q + t * mypower(2, x) + t < (int)(table_B[0].size() * t))) {
+    if (!compare_lcp(p, q, x, table_A, table_B, S_A, S_B, aux_power_table, t, A,
+                     B)) {
       break;
     }
     x++;
   }
   int pp = p;
   int qq = q;
-  //    x -= 1; // now the x is the minimum LCP,
-  // and the real lcp should locate in x and x + 1 block range
+
   if (x > 0) {
-    pp = p + t * mypower(2, x - 1);
-    qq = q + t * mypower(2, x - 1);
+    pp = p + t * mypower(2, x - 1) + t;
+    qq = q + t * mypower(2, x - 1) + t;
     int y = x - 1;
     while (y >= 0) {
-      if (compare_lcp(pp, qq, y, table_A, table_B, S_A, S_B, aux_power_table,
-                      t)) {
-        pp += t * mypower(2, y);
-        qq += t * mypower(2, y);
+      if (compare_lcp(pp, qq, y, table_A, table_B, S_A, S_B, aux_power_table, t,
+                      A, B)) {
+        pp += t * mypower(2, y) + t;
+        qq += t * mypower(2, y) + t;
       }
-      y -= 1;
+      y--;
     }
   } else {
     pp = p;

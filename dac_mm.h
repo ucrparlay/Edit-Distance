@@ -9,7 +9,7 @@
 
 using namespace parlay;
 using namespace std;
-static constexpr size_t BASE_CASE_SIZE = 64;
+static constexpr size_t BASE_CASE_SIZE = 128;
 
 size_t get_pow2(size_t x) {
   size_t ret = 1;

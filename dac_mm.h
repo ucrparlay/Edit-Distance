@@ -9,7 +9,7 @@
 
 using namespace parlay;
 using namespace std;
-static constexpr size_t BASE_CASE_SIZE = 64;
+static constexpr size_t BASE_CASE_SIZE = 128;
 
 size_t get_pow2(size_t x) {
   size_t ret = 1;
@@ -22,7 +22,7 @@ size_t get_pow2(size_t x) {
 template <typename s_size_t>
 sequence<sequence<s_size_t>> merge_horizontal(
     const sequence<sequence<s_size_t>> &left,
-    const sequence<sequence<s_size_t>> &right, size_t k) {
+    const sequence<sequence<s_size_t>> &right, size_t k, bool do_parallel) {
   size_t n1 = left.size(), n2 = right.size();
   if (n1 == 0) {
     return right;
@@ -31,6 +31,7 @@ sequence<sequence<s_size_t>> merge_horizontal(
     return left;
   }
   size_t n = n1 + n2 - k - 1;
+  size_t granularity = do_parallel ? 0 : std::numeric_limits<long>::max();
   static constexpr s_size_t MAX_VAL = std::numeric_limits<s_size_t>::max() / 2;
   sequence<sequence<s_size_t>> ret(n, sequence<s_size_t>(n, MAX_VAL));
   if (n < BASE_CASE_SIZE) {
@@ -56,14 +57,24 @@ sequence<sequence<s_size_t>> merge_horizontal(
     }
     return ret;
   }
-  parallel_for(0, n1, [&](size_t i) {
-    parallel_for(0, n1 - k, [&](size_t j) { ret[i][j] = left[i][j]; });
-  });
-  parallel_for(0, n2 - k, [&](size_t i) {
-    parallel_for(0, n2, [&](size_t j) {
-      ret[n1 - 1 + i][n1 - k - 1 + j] = right[k + i][j];
-    });
-  });
+  parallel_for(
+      0, n1,
+      [&](size_t i) {
+        parallel_for(
+            0, n1 - k, [&](size_t j) { ret[i][j] = left[i][j]; }, granularity);
+      },
+      granularity);
+  parallel_for(
+      0, n2 - k,
+      [&](size_t i) {
+        parallel_for(
+            0, n2,
+            [&](size_t j) {
+              ret[n1 - 1 + i][n1 - k - 1 + j] = right[k + i][j];
+            },
+            granularity);
+      },
+      granularity);
 
   sequence<sequence<s_size_t>> theta(n1, sequence<s_size_t>(n2, MAX_VAL));
   auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
@@ -90,37 +101,55 @@ sequence<sequence<s_size_t>> merge_horizontal(
     theta[i][j] = mn_p;
   };
   auto compute_odd_even = [&](size_t p, size_t q) {
-    parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
-      parallel_for(0, (n2 - 1) / (q * 2) + 1, [&](size_t j) {
-        size_t x = p * (2 * i + 1);
-        size_t y = q * (2 * j);
-        size_t s = theta[x - p][y];
-        size_t t = x + p >= n1 ? k : theta[x + p][y];
-        compute(x, y, s, t);
-      });
-    });
+    parallel_for(
+        0, (n1 - p - 1) / (p * 2) + 1,
+        [&](size_t i) {
+          parallel_for(
+              0, (n2 - 1) / (q * 2) + 1,
+              [&](size_t j) {
+                size_t x = p * (2 * i + 1);
+                size_t y = q * (2 * j);
+                size_t s = theta[x - p][y];
+                size_t t = x + p >= n1 ? k : theta[x + p][y];
+                compute(x, y, s, t);
+              },
+              granularity);
+        },
+        granularity);
   };
   auto compute_even_odd = [&](size_t p, size_t q) {
-    parallel_for(0, (n1 - 1) / (p * 2) + 1, [&](size_t i) {
-      parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
-        size_t x = p * (2 * i);
-        size_t y = q * (2 * j + 1);
-        size_t s = theta[x][y - q];
-        size_t t = y + q >= n2 ? k : theta[x][y + q];
-        compute(x, y, s, t);
-      });
-    });
+    parallel_for(
+        0, (n1 - 1) / (p * 2) + 1,
+        [&](size_t i) {
+          parallel_for(
+              0, (n2 - q - 1) / (q * 2) + 1,
+              [&](size_t j) {
+                size_t x = p * (2 * i);
+                size_t y = q * (2 * j + 1);
+                size_t s = theta[x][y - q];
+                size_t t = y + q >= n2 ? k : theta[x][y + q];
+                compute(x, y, s, t);
+              },
+              granularity);
+        },
+        granularity);
   };
   auto compute_odd_odd = [&](size_t p, size_t q) {
-    parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
-      parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
-        size_t x = p * (2 * i + 1);
-        size_t y = q * (2 * j + 1);
-        size_t s = theta[x][y - q];
-        size_t t = y + q >= n2 ? k : theta[x][y + q];
-        compute(x, y, s, t);
-      });
-    });
+    parallel_for(
+        0, (n1 - p - 1) / (p * 2) + 1,
+        [&](size_t i) {
+          parallel_for(
+              0, (n2 - q - 1) / (q * 2) + 1,
+              [&](size_t j) {
+                size_t x = p * (2 * i + 1);
+                size_t y = q * (2 * j + 1);
+                size_t s = theta[x][y - q];
+                size_t t = y + q >= n2 ? k : theta[x][y + q];
+                compute(x, y, s, t);
+              },
+              granularity);
+        },
+        granularity);
   };
   size_t p = get_pow2(n1), q = get_pow2(n2);
   compute(0, 0, 0, k);
@@ -147,7 +176,7 @@ sequence<sequence<s_size_t>> merge_horizontal(
 template <typename s_size_t>
 sequence<sequence<s_size_t>> merge_vertical(
     const sequence<sequence<s_size_t>> &up,
-    const sequence<sequence<s_size_t>> &down, size_t k) {
+    const sequence<sequence<s_size_t>> &down, size_t k, bool do_parallel) {
   size_t n1 = up.size(), n2 = down.size();
   if (n1 == 0) {
     return down;
@@ -156,6 +185,7 @@ sequence<sequence<s_size_t>> merge_vertical(
     return up;
   }
   size_t n = n1 + n2 - k - 1;
+  size_t granularity = do_parallel ? 0 : std::numeric_limits<long>::max();
   static constexpr s_size_t MAX_VAL = std::numeric_limits<s_size_t>::max() / 2;
   sequence<sequence<s_size_t>> ret(n, sequence<s_size_t>(n, MAX_VAL));
   if (n < BASE_CASE_SIZE) {
@@ -181,14 +211,22 @@ sequence<sequence<s_size_t>> merge_vertical(
     }
     return ret;
   }
-  parallel_for(0, n1, [&](size_t i) {
-    parallel_for(0, n1 - k, [&](size_t j) {
-      ret[n2 - k - 1 + i][n2 - 1 + j] = up[i][k + j];
-    });
-  });
-  parallel_for(0, n2 - k, [&](size_t i) {
-    parallel_for(0, n2, [&](size_t j) { ret[i][j] = down[i][j]; });
-  });
+  parallel_for(
+      0, n1,
+      [&](size_t i) {
+        parallel_for(
+            0, n1 - k,
+            [&](size_t j) { ret[n2 - k - 1 + i][n2 - 1 + j] = up[i][k + j]; },
+            granularity);
+      },
+      granularity);
+  parallel_for(
+      0, n2 - k,
+      [&](size_t i) {
+        parallel_for(
+            0, n2, [&](size_t j) { ret[i][j] = down[i][j]; }, granularity);
+      },
+      granularity);
 
   sequence<sequence<s_size_t>> theta(n1, sequence<s_size_t>(n2, MAX_VAL));
   auto compute = [&](size_t i, size_t j, size_t l, size_t r) {
@@ -215,37 +253,55 @@ sequence<sequence<s_size_t>> merge_vertical(
     theta[i][j] = mn_p;
   };
   auto compute_odd_even = [&](size_t p, size_t q) {
-    parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
-      parallel_for(0, (n2 - 1) / (q * 2) + 1, [&](size_t j) {
-        size_t x = p * (2 * i + 1);
-        size_t y = q * (2 * j);
-        size_t s = theta[x - p][y];
-        size_t t = x + p >= n1 ? k : theta[x + p][y];
-        compute(x, y, s, t);
-      });
-    });
+    parallel_for(
+        0, (n1 - p - 1) / (p * 2) + 1,
+        [&](size_t i) {
+          parallel_for(
+              0, (n2 - 1) / (q * 2) + 1,
+              [&](size_t j) {
+                size_t x = p * (2 * i + 1);
+                size_t y = q * (2 * j);
+                size_t s = theta[x - p][y];
+                size_t t = x + p >= n1 ? k : theta[x + p][y];
+                compute(x, y, s, t);
+              },
+              granularity);
+        },
+        granularity);
   };
   auto compute_even_odd = [&](size_t p, size_t q) {
-    parallel_for(0, (n1 - 1) / (p * 2) + 1, [&](size_t i) {
-      parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
-        size_t x = p * (2 * i);
-        size_t y = q * (2 * j + 1);
-        size_t s = theta[x][y - q];
-        size_t t = y + q >= n2 ? k : theta[x][y + q];
-        compute(x, y, s, t);
-      });
-    });
+    parallel_for(
+        0, (n1 - 1) / (p * 2) + 1,
+        [&](size_t i) {
+          parallel_for(
+              0, (n2 - q - 1) / (q * 2) + 1,
+              [&](size_t j) {
+                size_t x = p * (2 * i);
+                size_t y = q * (2 * j + 1);
+                size_t s = theta[x][y - q];
+                size_t t = y + q >= n2 ? k : theta[x][y + q];
+                compute(x, y, s, t);
+              },
+              granularity);
+        },
+        granularity);
   };
   auto compute_odd_odd = [&](size_t p, size_t q) {
-    parallel_for(0, (n1 - p - 1) / (p * 2) + 1, [&](size_t i) {
-      parallel_for(0, (n2 - q - 1) / (q * 2) + 1, [&](size_t j) {
-        size_t x = p * (2 * i + 1);
-        size_t y = q * (2 * j + 1);
-        size_t s = theta[x][y - q];
-        size_t t = y + q >= n2 ? k : theta[x][y + q];
-        compute(x, y, s, t);
-      });
-    });
+    parallel_for(
+        0, (n1 - p - 1) / (p * 2) + 1,
+        [&](size_t i) {
+          parallel_for(
+              0, (n2 - q - 1) / (q * 2) + 1,
+              [&](size_t j) {
+                size_t x = p * (2 * i + 1);
+                size_t y = q * (2 * j + 1);
+                size_t s = theta[x][y - q];
+                size_t t = y + q >= n2 ? k : theta[x][y + q];
+                compute(x, y, s, t);
+              },
+              granularity);
+        },
+        granularity);
   };
   size_t p = get_pow2(n1), q = get_pow2(n2);
   compute(0, 0, 0, k);
@@ -273,9 +329,11 @@ template <typename Seq, typename s_size_t = uint32_t>
 class DAC_MM {
   const Seq &A;
   const Seq &B;
+  const int max_recursion;
 
  public:
-  DAC_MM(const Seq &_A, const Seq &_B) : A(_A), B(_B) {}
+  DAC_MM(const Seq &_A, const Seq &_B)
+      : A(_A), B(_B), max_recursion(log2_up(num_workers() * 10)) {}
 
   sequence<sequence<s_size_t>> solve_r_serial(size_t i, size_t n, size_t j,
                                               size_t m) {
@@ -323,14 +381,16 @@ class DAC_MM {
     return dist;
   }
 
-  sequence<sequence<s_size_t>> solve_r(size_t i, size_t n, size_t j, size_t m) {
+  sequence<sequence<s_size_t>> solve_r(size_t i, size_t n, size_t j, size_t m,
+                                       int recursion = 0) {
     if (n == 0 || m == 0) {
       return sequence<sequence<s_size_t>>();
     }
     if (n + m + 1 < BASE_CASE_SIZE / 4) {
       return solve_r_serial(i, n, j, m);
     }
-    bool do_parallel = (n + m + 1 >= BASE_CASE_SIZE);
+    bool do_parallel =
+        (n + m + 1 >= BASE_CASE_SIZE) & (recursion <= max_recursion);
     size_t n1 = (n + 1) / 2, n2 = n - n1;
     size_t m1 = (m + 1) / 2, m2 = m - m1;
     static constexpr s_size_t MAX_VAL =
@@ -342,13 +402,21 @@ class DAC_MM {
       dist[0][1] = dist[1][0] = dist[1][2] = dist[2][1] = 1;
       dist[1][1] = (A[i] != B[j]);
       return dist;
+    } else if (n == 1) {
+      sequence<sequence<s_size_t>> L, R;
+      par_do_if(
+          do_parallel, [&]() { L = solve_r(i, n, j, m1, recursion + 1); },
+          [&]() { R = solve_r(i, n, j + m1, m2, recursion + 1); });
+
+      auto dist = merge_horizontal(L, R, n, do_parallel);
+      return dist;
     } else if (m == 1) {
       sequence<sequence<s_size_t>> U, D;
       par_do_if(
-          do_parallel, [&]() { U = solve_r(i, n1, j, m); },
-          [&]() { D = solve_r(i + n1, n2, j, m); });
+          do_parallel, [&]() { U = solve_r(i, n1, j, m, recursion + 1); },
+          [&]() { D = solve_r(i + n1, n2, j, m, recursion + 1); });
 
-      auto dist = merge_vertical(U, D, m);
+      auto dist = merge_vertical(U, D, m, do_parallel);
       return dist;
     } else {
       sequence<sequence<s_size_t>> UL, UR, LL, LR, U, D;
@@ -356,19 +424,21 @@ class DAC_MM {
           do_parallel,
           [&]() {
             par_do_if(
-                do_parallel, [&]() { UL = solve_r(i, n1, j, m1); },
-                [&]() { UR = solve_r(i, n1, j + m1, m2); });
+                do_parallel,
+                [&]() { UL = solve_r(i, n1, j, m1, recursion + 1); },
+                [&]() { UR = solve_r(i, n1, j + m1, m2, recursion + 1); });
           },
           [&]() {
             par_do_if(
-                do_parallel, [&]() { LL = solve_r(i + n1, n2, j, m1); },
-                [&]() { LR = solve_r(i + n1, n2, j + m1, m2); });
+                do_parallel,
+                [&]() { LL = solve_r(i + n1, n2, j, m1, recursion + 1); },
+                [&]() { LR = solve_r(i + n1, n2, j + m1, m2, recursion + 1); });
           });
 
       par_do_if(
-          do_parallel, [&]() { U = merge_horizontal(UL, UR, n1); },
-          [&]() { D = merge_horizontal(LL, LR, n2); });
-      auto dist = merge_vertical(U, D, m);
+          do_parallel, [&]() { U = merge_horizontal(UL, UR, n1, do_parallel); },
+          [&]() { D = merge_horizontal(LL, LR, n2, do_parallel); });
+      auto dist = merge_vertical(U, D, m, do_parallel);
       return dist;
     }
   }

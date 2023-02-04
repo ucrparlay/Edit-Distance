@@ -48,3 +48,6 @@
 
 # test files
 test_customized.cpp
+
+build/
+.vscode

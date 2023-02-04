@@ -3,7 +3,7 @@
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
 template <typename Seq>
-int EditDistanceHashParallel(const Seq &a, const Seq &b) {
+int EditDistanceHashParallel(const Seq &a, const Seq &b, double *building_tm) {
   // build sparse table
 
   /**
@@ -27,8 +27,7 @@ int EditDistanceHashParallel(const Seq &a, const Seq &b) {
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 
-  double building_tm = tmr.elapsed();
-  std::cout << " building time of hashing: " << building_tm << std::endl;
+  *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_lcp(a, b, table_s1, table_s2, logN1, 0, 0);
   // bfs for path
   int k = 0;

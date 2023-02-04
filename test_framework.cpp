@@ -14,7 +14,7 @@
 #include "edit_distance_parallel.h"
 #include "minimum_edit_distance.h"
 
-constexpr size_t NUM_TESTS = 6;
+constexpr size_t NUM_TESTS = 4;
 size_t num_rounds = 3;
 
 template <typename T>
@@ -46,25 +46,25 @@ auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
 std::string test_name(int id) {
   switch (id) {
     case 0:
-      return "dp";
+      return "BFS-Hash";
       break;
     case 1:
-      return "string_hashing_bfs";
+      return "BFS-B-Hash";
       break;
     case 2:
-      return "parallel bfs";
+      return "BFS-SA";
       break;
     case 3:
-      return "parlay::edit_distance";
+      return "DaC-MM-K";
       break;
     case 4:
-      return "dac_mm";
+      return "DaC-MM";
       break;
     case 5:
-      return "dac_mm_k";
+      return "DP";
       break;
     case 6:
-      return "block_hashing";
+      return "ParlayLib";
       break;
     default:
       assert(0);
@@ -81,25 +81,25 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     size_t num_edits;
     switch (id) {
       case 0:
-        num_edits = EditDistanceDP<T>().Solve(A, B);
+        num_edits = EditDistanceHashParallel(A, B);
         break;
       case 1:
-        num_edits = EditDistanceHashParallel(A, B);
+        num_edits = EditDistanceBlockHashParallel(A, B);
         break;
       case 2:
         num_edits = EditDistanceParallel().Solve(A, B);
         break;
       case 3:
-        num_edits = minimum_edit_distance(A, B);
+        num_edits = DAC_MM_K<sequence<uint32_t>>(A, B).solve();
         break;
       case 4:
         num_edits = DAC_MM<sequence<uint32_t>>(A, B).solve();
         break;
       case 5:
-        num_edits = DAC_MM_K<sequence<uint32_t>>(A, B).solve();
+        num_edits = EditDistanceDP<T>().Solve(A, B);
         break;
       case 6:
-        num_edits = EditDistanceBlockHashParallel(A, B);
+        num_edits = minimum_edit_distance(A, B);
         break;
       default:
         assert(0);
@@ -138,12 +138,14 @@ void run_all(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
 }
 
 int main(int argc, char *argv[]) {
+  int id = -1;
   size_t n = 1000000;
   size_t k = 1000;
   size_t alpha = n;
   if (argc == 1) {
     printf(
-        "Usage: ./edit_distance <n> <k> <alpha> <rounds>\n"
+        "Usage: ./edit_distance <id> <n> <k> <alpha> <rounds>\n"
+        "id: id of the algorithm\n"
         "n: length of strings\n"
         "k: estimated number of edits\n"
         "alpha: alphabet size\n"
@@ -151,15 +153,21 @@ int main(int argc, char *argv[]) {
     exit(0);
   }
   if (argc >= 2) {
-    n = atoi(argv[1]);
+    id = atoi(argv[1]);
   }
   if (argc >= 3) {
-    k = atoi(argv[2]);
+    n = atoi(argv[2]);
   }
   if (argc >= 4) {
-    alpha = atoi(argv[3]);
+    k = atoi(argv[3]);
+  }
+  if (argc >= 5) {
+    alpha = atoi(argv[4]);
   }
   using Type = uint32_t;
+  parlay::sequence<Type> A, B;
+  std::tie(A, B) = generate_strings<Type>(n, k, alpha);
+  run_all(A, B, id);
   // for (size_t i = 1; i <= 500; i++) {
   // for (size_t j = 3 * i; j >= 1; j -= 3) {
   // for (size_t seed = 0; seed < 1; seed++) {
@@ -191,9 +199,6 @@ int main(int argc, char *argv[]) {
   //}
   //}
   //}
-  parlay::sequence<Type> A, B;
-  std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  run_all(A, B, 5);
 
   /*
     for real datasets

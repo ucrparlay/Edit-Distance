@@ -76,18 +76,20 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
             int id) {
   std::cout << "\nTest name: " << test_name(id) << std::endl;
   double total_time = 0;
+  double building_time_total = 0;
   for (size_t i = 0; i <= num_rounds; i++) {
     parlay::internal::timer t;
+    double b_time;
     size_t num_edits;
     switch (id) {
       case 0:
-        num_edits = EditDistanceHashParallel(A, B);
+        num_edits = EditDistanceHashParallel(A, B, &b_time);
         break;
       case 1:
-        num_edits = EditDistanceBlockHashParallel(A, B);
+        num_edits = EditDistanceBlockHashParallel(A, B, &b_time);
         break;
       case 2:
-        num_edits = EditDistanceParallel().Solve(A, B);
+        num_edits = EditDistanceParallel().Solve(A, B, &b_time);
         break;
       case 3:
         num_edits = DAC_MM_K<sequence<uint32_t>>(A, B).solve();
@@ -111,10 +113,12 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     } else {
       printf("Round %zu: %f\n", i, t.total_time());
       total_time += t.total_time();
+      building_time_total += b_time;
     }
   }
   double average_time = total_time / num_rounds;
   printf("Average time: %f\n", total_time / num_rounds);
+  printf("Average Building time: %f\n", building_time_total / num_rounds);
   return average_time;
 }
 

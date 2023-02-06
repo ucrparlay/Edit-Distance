@@ -164,6 +164,9 @@ int main(int argc, char *argv[]) {
   if (argc >= 5) {
     alpha = atoi(argv[4]);
   }
+  if (argc >= 6) {
+    num_rounds = atoi(argv[5]);
+  }
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);

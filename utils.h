@@ -25,7 +25,7 @@
 #include "parlay/primitives.h"
 #include "parlay/sequence.h"
 
-const int PRIME_BASE = 479;
+constexpr int PRIME_BASE = 479;
 // const int PRIME_BASE = 631;
 
 #define FASTLOG2(X) \

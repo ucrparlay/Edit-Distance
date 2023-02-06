@@ -3,6 +3,7 @@
 
 #include "utils.h"
 using namespace std;
+constexpr int BLOCK_SIZE = 32;
 
 // auxiliary function for power x^p
 int mypower(int x, int p) {
@@ -15,15 +16,14 @@ int mypower(int x, int p) {
 
 // build a table
 template <typename T>
-void build(const T seq, parlay::sequence<parlay::sequence<int>> &table_seq,
-           size_t block_size) {
-  size_t k = seq.size() / block_size;
-  // pre-computed power table [p^(block_size), p^(2 * block_size), ... p^(logk *
-  // block_size)]
+void build(const T seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
+  size_t k = seq.size() / BLOCK_SIZE;
+  // pre-computed power table [p^(BLOCK_SIZE), p^(2 * BLOCK_SIZE), ... p^(logk *
+  // BLOCK_SIZE)]
   int LOG2_k = FASTLOG2(k);
   parlay::sequence<int> block_power_table;
   for (int i = 0; i < LOG2_k; i++) {
-    block_power_table.push_back(mypower(PRIME_BASE, int(block_size * (i + 1))));
+    block_power_table.push_back(mypower(PRIME_BASE, int(BLOCK_SIZE * (i + 1))));
   }
   table_seq.resize(LOG2_k + 1);
   // pre-computed log table [1, 2, 4, ..., logk]
@@ -34,18 +34,18 @@ void build(const T seq, parlay::sequence<parlay::sequence<int>> &table_seq,
 
   // for the first dim of the table
   parlay::sequence<int> aux_inside_block_table;
-  for (int i = 0; i <= (int)(block_size); i++) {
+  for (int i = 0; i <= (int)(BLOCK_SIZE); i++) {
     aux_inside_block_table.push_back(mypower(PRIME_BASE, i));
   }
   table_seq[0].resize(k);
   parlay::parallel_for(0, k, [&](int j) {
-    // table_seq[0][j] = hash_value(seq, j * block_size, (j + 1) * block_size -
+    // table_seq[0][j] = hash_value(seq, j * BLOCK_SIZE, (j + 1) * BLOCK_SIZE -
     // 1);
     table_seq[0][j] = 0;
-    for (int b_j = j * block_size; b_j <= (int)((j + 1) * block_size - 1);
+    for (int b_j = j * BLOCK_SIZE; b_j <= (int)((j + 1) * BLOCK_SIZE - 1);
          b_j++) {
       table_seq[0][j] +=
-          (aux_inside_block_table[(j + 1) * block_size - 1 - b_j] *
+          (aux_inside_block_table[(j + 1) * BLOCK_SIZE - 1 - b_j] *
            (int)seq[b_j]);
     }
   });
@@ -59,6 +59,19 @@ void build(const T seq, parlay::sequence<parlay::sequence<int>> &table_seq,
   }
 }
 
+int qpow(int n) {
+  int ret = 1;
+  int a = PRIME_BASE;
+  while(n) {
+    if(n&1) {
+      ret = ret*a;
+    }
+    a = a*a;
+    n >>= 1;
+  }
+  return ret;
+}
+
 // function to build the two tables. `n` is
 // the length of the initial sequence size.
 template <typename T>
@@ -69,6 +82,7 @@ size_t construct_table(T &A, T &B,
                        parlay::sequence<std::pair<int, int>> &pre_su_b,
                        parlay::sequence<int> &auxiliary_single_power_table,
                        size_t n) {
+  parlay::internal::timer t;
   // logn
 
   /**
@@ -79,13 +93,8 @@ size_t construct_table(T &A, T &B,
   /**
    * 32 / 64 ?
    */
-  int BLOCK_SIZE = (BLOCK_SIZE_UPPER <= 32) ? 32 : 64;
-  // build the powertable
-  if (BLOCK_SIZE == 0) {
-    BLOCK_SIZE = 1;
-  }
-  build(A, table_A, BLOCK_SIZE);
-  build(B, table_B, BLOCK_SIZE);
+  build(A, table_A);
+  build(B, table_B);
 
   // build the suffix
   // auxiliary power table
@@ -96,59 +105,79 @@ size_t construct_table(T &A, T &B,
 
   size_t aux_size =
       std::max(table_A[0].size() * BLOCK_SIZE, table_B[0].size() * BLOCK_SIZE);
-  auxiliary_single_power_table.resize(aux_size);
+  //auxiliary_single_power_table.resize(aux_size);
+  //auxiliary_single_power_table[0] = 1;
+  //t.next("first");
+
+  auxiliary_single_power_table = parlay::sequence<int>(aux_size, PRIME_BASE);
   auxiliary_single_power_table[0] = 1;
-  for (int i = 1; i < aux_size; i++) {
-    auxiliary_single_power_table[i] =
-        PRIME_BASE * auxiliary_single_power_table[i - 1];
-  };
+
+  scan_inplace(make_slice(auxiliary_single_power_table), parlay::multiplies<int>());
+
+  //for (int i = 1; i < aux_size; i++) {
+    //auxiliary_single_power_table[i] =
+        //PRIME_BASE * auxiliary_single_power_table[i - 1];
+  //};
   int a_actual_size = BLOCK_SIZE * int(A.size() / BLOCK_SIZE);
   int b_actual_size = BLOCK_SIZE * int(B.size() / BLOCK_SIZE);
   // prefix_a.resize(a_actual_size);
   // prefix_b.resize(b_actual_size);
-  pre_su_a.resize(a_actual_size);
-  pre_su_b.resize(b_actual_size);
+  
+  pre_su_a = parlay::sequence<std::pair<int, int>>::uninitialized(a_actual_size);
+  pre_su_b = parlay::sequence<std::pair<int, int>>::uninitialized(b_actual_size);
+  //pre_su_a.resize(a_actual_size);
+  //pre_su_b.resize(b_actual_size);
+
+  //t.next("table and resize");
 
   // for both prefix and suffix precomputing
-  parlay::parallel_for(0, a_actual_size, [&](int i) {
-    pre_su_a[i].first = 0;
-    pre_su_a[i].second = 0;
-    for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++) {
-      pre_su_a[i].second +=
-          auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) -
-                                       k - 1] *
-          int(A[k]);
-    }
-    for (int l = (i / BLOCK_SIZE) * int(BLOCK_SIZE); l <= i; l++) {
-      pre_su_a[i].first += auxiliary_single_power_table[i - l] * int(A[l]);
-    }
+  
+  int num_blocks_a = a_actual_size / BLOCK_SIZE;
+  int num_blocks_b = b_actual_size / BLOCK_SIZE;
+  
+  parlay::parallel_for(0, num_blocks_a, [&](size_t i) {
+      int s = i * BLOCK_SIZE;
+      int e = (i + 1) * BLOCK_SIZE;
+      pre_su_a[s].first = A[s];
+      for(int j = s + 1; j < e; j++) {
+        pre_su_a[j].first = pre_su_a[j - 1].first * PRIME_BASE + A[j];
+      }
+
+      pre_su_a[e - 1].second = A[e - 1];
+      for(int j = e - 2; j >= s; j--) {
+        pre_su_a[j].second = pre_su_a[j + 1].second * PRIME_BASE + A[j];
+      }
   });
 
-  parlay::parallel_for(0, b_actual_size, [&](int i) {
-    pre_su_b[i].first = 0;
-    pre_su_b[i].second = 0;
-    for (int k = i; k < (i / BLOCK_SIZE + 1) * int(BLOCK_SIZE); k++) {
-      pre_su_b[i].second +=
-          auxiliary_single_power_table[(i / BLOCK_SIZE + 1) * int(BLOCK_SIZE) -
-                                       k - 1] *
-          int(B[k]);
-    }
-    for (int l = (i / BLOCK_SIZE) * int(BLOCK_SIZE); l <= i; l++) {
-      pre_su_b[i].first += auxiliary_single_power_table[i - l] * int(B[l]);
-    }
+  //t.next("second");
+
+  parlay::parallel_for(0, num_blocks_b, [&](size_t i) {
+      int s = i * BLOCK_SIZE;
+      int e = (i + 1) * BLOCK_SIZE;
+      pre_su_b[s].first = B[s];
+      for(int j = s + 1; j < e; j++) {
+        pre_su_b[j].first = pre_su_b[j - 1].first * PRIME_BASE + B[j];
+      }
+
+      pre_su_b[e - 1].second = B[e - 1];
+      for(int j = e - 2; j >= s; j--) {
+        pre_su_b[j].second = pre_su_b[j + 1].second * PRIME_BASE + B[j];
+      }
   });
+
+  //t.next("third");
   return BLOCK_SIZE;
 }
 
 template <typename T>
 bool compare_lcp(int p, int q, int z,
-                 parlay::sequence<parlay::sequence<int>> &table_A,
-                 parlay::sequence<parlay::sequence<int>> &table_B,
-                 parlay::sequence<std::pair<int, int>> &S_A,
-                 parlay::sequence<std::pair<int, int>> &S_B,
-                 parlay::sequence<int> &aux_power_table, int t, const T &A,
+                 const parlay::sequence<parlay::sequence<int>> &table_A,
+                 const parlay::sequence<parlay::sequence<int>> &table_B,
+                 const parlay::sequence<std::pair<int, int>> &S_A,
+                 const parlay::sequence<std::pair<int, int>> &S_B,
+                 const parlay::sequence<int> &aux_power_table, int t, const T &A,
                  const T &B) {
-  // size_t t = S_A.size() / table_A[0].size(); // block_size
+  // size_t t = S_A.size() / table_A[0].size(); // BLOCK_SIZE
   if (t == 0) {
     return false;
   }
@@ -191,11 +220,11 @@ bool compare_lcp(int p, int q, int z,
 // function for query the lcp from A[p] and B[q]
 template <typename T>
 int block_query_lcp(int p, int q, const T &A, const T &B,
-                    parlay::sequence<parlay::sequence<int>> &table_A,
-                    parlay::sequence<parlay::sequence<int>> &table_B,
-                    parlay::sequence<std::pair<int, int>> &S_A,
-                    parlay::sequence<std::pair<int, int>> &S_B,
-                    parlay::sequence<int> &aux_power_table, int t) {
+                    const parlay::sequence<parlay::sequence<int>> &table_A,
+                    const parlay::sequence<parlay::sequence<int>> &table_B,
+                    const parlay::sequence<std::pair<int, int>> &S_A,
+                    const parlay::sequence<std::pair<int, int>> &S_B,
+                    const parlay::sequence<int> &aux_power_table, int t) {
   // find the possible block range point (omit the offset first)
   if (p >= (int)(A.size()) || q >= (int)(B.size())) {
     return 0;
@@ -205,7 +234,7 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
     return 0;
   }
   int x = 0;
-  // size_t t = S_A.size() / table_A[0].size(); // block_size
+  // size_t t = S_A.size() / table_A[0].size(); // BLOCK_SIZE
   while ((p + t * mypower(2, x) + t < (int)(table_A[0].size() * t)) &&
          (q + t * mypower(2, x) + t < (int)(table_B[0].size() * t))) {
     if (!compare_lcp(p, q, x, table_A, table_B, S_A, S_B, aux_power_table, t, A,

@@ -20,17 +20,15 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
   parlay::sequence<parlay::sequence<int>> table_B;
   parlay::sequence<std::pair<int, int>> S_A;
   parlay::sequence<std::pair<int, int>> S_B;
-  parlay::sequence<int> aux_table;
-  int blk_size = construct_table(a, b, table_A, table_B, S_A, S_B, aux_table,
-                                 std::min(n, m));
+  construct_table(a, b, table_A, table_B, S_A, S_B, std::min(n, m));
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 
   *building_tm = tmr.elapsed();
   // std::cout << building_tm << ", ";
 
-  max_row[Diag(0, 0)] = block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B,
-                                        aux_table, blk_size);
+  max_row[Diag(0, 0)] =
+      block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B);
 
   // bfs for path
   int k = 0;
@@ -47,8 +45,8 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
         if (i == n || j == m) {
           t = i;
         } else {
-          int get_lcp = block_query_lcp(i + 1, j + 1, a, b, table_A, table_B,
-                                        S_A, S_B, aux_table, blk_size);
+          int get_lcp =
+              block_query_lcp(i + 1, j + 1, a, b, table_A, table_B, S_A, S_B);
           t = i + 1 + get_lcp;
         }
       }
@@ -60,7 +58,7 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
         } else {
           t = std::max(t, i + 1 +
                               block_query_lcp(i + 1, j, a, b, table_A, table_B,
-                                              S_A, S_B, aux_table, blk_size));
+                                              S_A, S_B));
         }
       }
       if (id < n + m && max_row[id + 1] != -1) {
@@ -70,7 +68,7 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
           t = std::max(t, i);
         } else {
           t = std::max(t, i + block_query_lcp(i, j + 1, a, b, table_A, table_B,
-                                              S_A, S_B, aux_table, blk_size));
+                                              S_A, S_B));
         }
       }
       // assert(t <= n);

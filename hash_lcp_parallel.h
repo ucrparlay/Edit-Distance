@@ -30,12 +30,8 @@ void build_hash_table(const parlay::sequence<T> &s1,
   table_s1[0].resize(table1_d2);
   table_s2[0].resize(table2_d2);
   // build the first layer of ST in parallel
-  parlay::parallel_for(0, table1_d2,
-                       [&](int i) { table_s1[0][i] = int(s1[i]); });
-  parlay::parallel_for(0, table2_d2,
-                       [&](int j) { table_s2[0][j] = int(s2[j]); });
-
   int aux_log_size = std::max(table1_d1, table2_d1);
+
   logN1.resize(aux_log_size);
   powerN1.resize(aux_log_size + 1);
   int len = 1;
@@ -48,11 +44,21 @@ void build_hash_table(const parlay::sequence<T> &s1,
   for (size_t i = 1; i < aux_log_size; i++) {
     powerN1[i + 1] = powerN1[i] * powerN1[i];
   }
+  table_s1 = parlay::tabulate(table1_d1, [&](size_t i) {
+    return parlay::sequence<int>::uninitialized(table1_d2 - logN1[i] + 1);
+  });
 
+  table_s2 = parlay::tabulate(table2_d1, [&](size_t i) {
+    return parlay::sequence<int>::uninitialized(table2_d2 - logN1[i] + 1);
+  });
+  parlay::parallel_for(0, table1_d2,
+                       [&](int i) { table_s1[0][i] = int(s1[i]); });
+  parlay::parallel_for(0, table2_d2,
+                       [&](int j) { table_s2[0][j] = int(s2[j]); });
   // build the second to k-th layer
   if (table1_d1 > 1) {
     for (size_t i = 1; i < table1_d1; i++) {
-      table_s1[i].resize(table1_d2 - logN1[i] + 1);
+      // table_s1[i].resize(table1_d2 - logN1[i] + 1);
       parlay::parallel_for(0, table1_d2 - logN1[i] + 1, [&](int j) {
         table_s1[i][j] =
             table_s1[i - 1][j + logN1[i - 1]] + table_s1[i - 1][j] * powerN1[i];
@@ -61,7 +67,7 @@ void build_hash_table(const parlay::sequence<T> &s1,
   }
   if (table2_d1 > 1) {
     for (size_t i = 1; i < table2_d1; i++) {
-      table_s2[i].resize(table2_d2 - logN1[i] + 1);
+      // table_s2[i].resize(table2_d2 - logN1[i] + 1);
       parlay::parallel_for(0, table2_d2 - logN1[i] + 1, [&](int j) {
         table_s2[i][j] =
             table_s2[i - 1][j + logN1[i - 1]] + table_s2[i - 1][j] * powerN1[i];
@@ -79,9 +85,9 @@ void build_hash_table(const parlay::sequence<T> &s1,
 //    auto lcp(Seq1 const &s, Seq2 const &SA);
 template <typename T>
 int query_lcp(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
-              parlay::sequence<parlay::sequence<int>> &table1,
-              parlay::sequence<parlay::sequence<int>> &table2,
-              parlay::sequence<int> &logN1, int i, int j) {
+              const parlay::sequence<parlay::sequence<int>> &table1,
+              const parlay::sequence<parlay::sequence<int>> &table2,
+              const parlay::sequence<int> &logN1, int i, int j) {
   if (i >= (int)(s1.size()) || j >= (int)(s2.size())) {
     return 0;
   }

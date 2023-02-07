@@ -171,31 +171,12 @@ void run_all(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
 
 int main(int argc, char *argv[]) {
   int id = -1;
-  size_t n = 1000000;
-  size_t k = 1000;
-  size_t alpha = n;
   std::string path_1;
   std::string path_2;
 
   InputParser input(argc, argv);
   if (input.cmdOptionExists("-i")) {
     id = atoi(argv[1]);
-  }
-
-  if (input.cmdOptionExists("-n")) {
-    n = atoi(argv[2]);
-  }
-
-  if (input.cmdOptionExists("-k")) {
-    k = atoi(argv[3]);
-  }
-
-  if (input.cmdOptionExists("-a")) {
-    alpha = atoi(argv[4]);
-  }
-
-  if (input.cmdOptionExists("-r")) {
-    num_rounds = atoi(argv[5]);
   }
 
   const std::string &filename1 = input.getCmdOption("-f1");
@@ -221,66 +202,10 @@ int main(int argc, char *argv[]) {
         "file_path2: text file 2");
     exit(0);
   }
-  // if (argc >= 2) {
-  //   id = atoi(argv[1]);
-  // }
-  // if (argc >= 3) {
-  //   n = atoi(argv[2]);
-  // }
-  // if (argc >= 4) {
-  //   k = atoi(argv[3]);
-  // }
-  // if (argc >= 5) {
-  //   alpha = atoi(argv[4]);
-  // }
-  // if (argc >= 6) {
-  //   num_rounds = atoi(argv[5]);
-  // }
-  // if (argc >= 7) {
-  //   path_1 = atoi(argv[6]);
-  // }
-  // if (argc >= 8) {
-  //   path_2 = atoi(argv[7]);
-  // }
 
-  using Type = uint32_t;
-  parlay::sequence<Type> A, B;
-  std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  run_all(A, B, id);
-  // for (size_t i = 1; i <= 500; i++) {
-  //   for (size_t j = 3 * i; j >= 1; j -= 3) {
-  //     for (size_t seed = 0; seed < 1; seed++) {
-  //       printf("i: %zu, j: %zu\n", i, j);
-  //       parlay::sequence<Type> A, B;
-  //       std::tie(A, B) = generate_strings<Type>(i, j, 3 * i, seed);
-  //       // printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
-  //       // printf("A: ");
-  //       // for (size_t k = 0; k < A.size(); k++) {
-  //       // printf("%u ", A[k]);
-  //       // }
-  //       // puts("");
-  //       // printf("B: ");
-  //       // for (size_t k = 0; k < B.size(); k++) {
-  //       // printf("%u ", B[k]);
-  //       // }
-  //       // puts("");
-  //       double b_time_1;
-  //       double b_time_2;
-  //       size_t v1 = EditDistanceBlockHashParallel(A, B, &b_time_1);
-  //       size_t v2 = EditDistanceHashParallel(A, B, &b_time_2);
-  //       if (v1 != v2) {
-  //         printf("v1: %zu, v2: %zu\n", v1, v2);
-  //         printf("wrong answer\n");
-  //         if (A.size() < 20) {
-  //           return 0;
-  //         } else {
-  //           getchar();
-  //           // }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+
+
+
 
   /*
     for real datasets

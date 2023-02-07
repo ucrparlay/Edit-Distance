@@ -34,7 +34,6 @@ void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
   // pre-computed power table [p^(BLOCK_SIZE), p^(2 * BLOCK_SIZE), ... p^(logk *
   // BLOCK_SIZE)]
   int LOG2_k = FASTLOG2(k);
-
   table_seq = parlay::tabulate(LOG2_k + 1, [&](size_t i) {
     return parlay::sequence<int>::uninitialized(k - (1 << i) + 1);
   });
@@ -82,6 +81,9 @@ void construct_table(T &A, T &B,
                      parlay::sequence<std::pair<int, int>> &pre_su_a,
                      parlay::sequence<std::pair<int, int>> &pre_su_b,
                      size_t n) {
+  if (A.size() < BLOCK_SIZE || B.size() < BLOCK_SIZE) {
+    return;
+  }
   // logn
 
   /**
@@ -112,7 +114,7 @@ void construct_table(T &A, T &B,
       parlay::sequence<std::pair<int, int>>::uninitialized(a_actual_size);
   pre_su_b =
       parlay::sequence<std::pair<int, int>>::uninitialized(b_actual_size);
-  t.next("first");
+  //t.next("first");
   // pre_su_a.resize(a_actual_size);
   // pre_su_b.resize(b_actual_size);
 
@@ -134,7 +136,7 @@ void construct_table(T &A, T &B,
       pre_su_a[j].second = pre_su_a[j + 1].second * PRIME_BASE + A[j];
     }
   });
-  t.next("second");
+  //t.next("second");
 
   parlay::parallel_for(0, num_blocks_b, [&](size_t i) {
     int s = i * BLOCK_SIZE;
@@ -149,7 +151,7 @@ void construct_table(T &A, T &B,
       pre_su_b[j].second = pre_su_b[j + 1].second * PRIME_BASE + B[j];
     }
   });
-  t.next("third");
+  //t.next("third");
 }
 
 template <typename T>
@@ -180,8 +182,7 @@ bool compare_lcp(int p, int q, int z,
   int hash_b_v;
 
   if (p % t == 0) {
-    hash_a_v =
-        table_A[z][p / t] * qpow(t) + table_A[0][p / t + (1 << z)];
+    hash_a_v = table_A[z][p / t] * qpow(t) + table_A[0][p / t + (1 << z)];
   } else {
     hash_a_v = S_A[p].second * qpow((1 << z) * t + t) +
                (table_A[z][next_block_A]) * qpow(t - rest_A_size) +
@@ -189,8 +190,7 @@ bool compare_lcp(int p, int q, int z,
   }
 
   if (q % t == 0) {
-    hash_b_v =
-        table_B[z][q / t] * qpow(t) + table_B[0][p / t + (1 << z)];
+    hash_b_v = table_B[z][q / t] * qpow(t) + table_B[0][p / t + (1 << z)];
   } else {
     hash_b_v = S_B[q].second * qpow((1 << z) * t + t) +
                (table_B[z][next_block_B]) * qpow(t - rest_B_size) +
@@ -208,6 +208,15 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
                     const parlay::sequence<std::pair<int, int>> &S_A,
                     const parlay::sequence<std::pair<int, int>> &S_B) {
   constexpr int t = BLOCK_SIZE;
+  if (A.size() < t || B.size() < t) {
+    int pp = p;
+    int qq = q;
+    while (pp < (int)A.size() && qq < (int)B.size() && A[pp] == B[qq]) {
+      pp++;
+      qq++;
+    }
+    return pp - p;
+  }
   // find the possible block range point (omit the offset first)
   if (p >= (int)(A.size()) || q >= (int)(B.size())) {
     return 0;
@@ -250,11 +259,7 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
     qq++;
   }
 
-  if (pp != p) {
-    return (pp - p);
-  } else {
-    return 1;
-  }
+  return pp - p;
 }
 
 #endif

@@ -17,9 +17,35 @@
 constexpr size_t NUM_TESTS = 4;
 size_t num_rounds = 3;
 
+class InputParser {
+ public:
+  InputParser(int &argc, char **argv) {
+    for (int i = 1; i < argc; ++i) this->tokens.push_back(std::string(argv[i]));
+  }
+
+  const std::string &getCmdOption(const std::string &option) const {
+    std::vector<std::string>::const_iterator itr;
+    itr = std::find(this->tokens.begin(), this->tokens.end(), option);
+    if (itr != this->tokens.end() && ++itr != this->tokens.end()) {
+      return *itr;
+    }
+    static const std::string empty_string("");
+    return empty_string;
+  }
+
+  bool cmdOptionExists(const std::string &option) const {
+    return std::find(this->tokens.begin(), this->tokens.end(), option) !=
+           this->tokens.end();
+  }
+
+ private:
+  std::vector<std::string> tokens;
+};
+
 template <typename T>
 auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
-  printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k, alpha);
+  printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k,
+  alpha);
   parlay::sequence<T> A(n), B(n);
   parlay::parallel_for(
       0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha; });
@@ -74,7 +100,7 @@ std::string test_name(int id) {
 template <typename T>
 double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
             int id) {
-  std::cout << "\nTest name: " << test_name(id) << std::endl;
+  // std::cout << "\nTest name: " << test_name(id) << std::endl;
   double total_time = 0;
   double building_time_total = 0;
   for (size_t i = 0; i <= num_rounds; i++) {
@@ -108,8 +134,9 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     }
     t.stop();
     if (i == 0) {
+      std::cout << test_name(id) << std::endl;
       printf("#edits: %zu\n", num_edits);
-      printf("Warmup round: %f\n", t.total_time());
+      printf("Warmup round: %f, %f\n", b_time, t.total_time());
     } else {
       printf("Round %zu: %f\n", i, t.total_time());
       total_time += t.total_time();
@@ -117,8 +144,9 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
     }
   }
   double average_time = total_time / num_rounds;
-  printf("Average time: %f\n", total_time / num_rounds);
-  printf("Average Building time: %f\n", building_time_total / num_rounds);
+  printf("avg building time: %f, ", building_time_total / num_rounds);
+  printf("avg time: %f\n", total_time / num_rounds);
+
   return average_time;
 }
 
@@ -146,81 +174,124 @@ int main(int argc, char *argv[]) {
   size_t n = 1000000;
   size_t k = 1000;
   size_t alpha = n;
+  std::string path_1;
+  std::string path_2;
+
+  InputParser input(argc, argv);
+  if (input.cmdOptionExists("-i")) {
+    id = atoi(argv[1]);
+  }
+
+  if (input.cmdOptionExists("-n")) {
+    n = atoi(argv[2]);
+  }
+
+  if (input.cmdOptionExists("-k")) {
+    k = atoi(argv[3]);
+  }
+
+  if (input.cmdOptionExists("-a")) {
+    alpha = atoi(argv[4]);
+  }
+
+  if (input.cmdOptionExists("-r")) {
+    num_rounds = atoi(argv[5]);
+  }
+
+  const std::string &filename1 = input.getCmdOption("-f1");
+  if (!filename1.empty()) {
+    path_1 = filename1;
+  }
+
+  const std::string &filename2 = input.getCmdOption("-f2");
+  if (!filename2.empty()) {
+    path_2 = filename2;
+  }
   if (argc == 1) {
     printf(
-        "Usage: ./edit_distance <id> <n> <k> <alpha> <rounds>\n"
+        "Usage: ./edit_distance -i <id> -n <n> -k <k> -a <alpha> -r <rounds> "
+        "-f1 <file_path1> "
+        " -f2 <file_path2>\n"
         "id: id of the algorithm\n"
         "n: length of strings\n"
         "k: estimated number of edits\n"
         "alpha: alphabet size\n"
-        "rounds: number of rounds");
+        "rounds: number of rounds\n"
+        "file_path1: text file 1\n"
+        "file_path2: text file 2");
     exit(0);
   }
-  if (argc >= 2) {
-    id = atoi(argv[1]);
-  }
-  if (argc >= 3) {
-    n = atoi(argv[2]);
-  }
-  if (argc >= 4) {
-    k = atoi(argv[3]);
-  }
-  if (argc >= 5) {
-    alpha = atoi(argv[4]);
-  }
-  if (argc >= 6) {
-    num_rounds = atoi(argv[5]);
-  }
+  // if (argc >= 2) {
+  //   id = atoi(argv[1]);
+  // }
+  // if (argc >= 3) {
+  //   n = atoi(argv[2]);
+  // }
+  // if (argc >= 4) {
+  //   k = atoi(argv[3]);
+  // }
+  // if (argc >= 5) {
+  //   alpha = atoi(argv[4]);
+  // }
+  // if (argc >= 6) {
+  //   num_rounds = atoi(argv[5]);
+  // }
+  // if (argc >= 7) {
+  //   path_1 = atoi(argv[6]);
+  // }
+  // if (argc >= 8) {
+  //   path_2 = atoi(argv[7]);
+  // }
+
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
   run_all(A, B, id);
   // for (size_t i = 1; i <= 500; i++) {
-  // for (size_t j = 3 * i; j >= 1; j -= 3) {
-  // for (size_t seed = 0; seed < 1; seed++) {
-  // printf("i: %zu, j: %zu\n", i, j);
-  // parlay::sequence<Type> A, B;
-  // std::tie(A, B) = generate_strings<Type>(i, j, 3 * i, seed);
-  ////printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
-  ////printf("A: ");
-  ////for (size_t k = 0; k < A.size(); k++) {
-  ////printf("%u ", A[k]);
-  ////}
-  ////puts("");
-  ////printf("B: ");
-  ////for (size_t k = 0; k < B.size(); k++) {
-  ////printf("%u ", B[k]);
-  ////}
-  ////puts("");
-  // size_t v1 = EditDistanceDP<Type>().Solve(A, B);
-  // size_t v2 = DAC_MM_K<sequence<Type>>(A, B).solve();
-  // if (v1 != v2) {
-  // printf("v1: %zu, v2: %zu\n", v1, v2);
-  // printf("wrong answer\n");
-  // if (A.size() < 20) {
-  // return 0;
-  //} else {
-  // getchar();
-  //}
-  //}
-  //}
-  //}
-  //}
+  //   for (size_t j = 3 * i; j >= 1; j -= 3) {
+  //     for (size_t seed = 0; seed < 1; seed++) {
+  //       printf("i: %zu, j: %zu\n", i, j);
+  //       parlay::sequence<Type> A, B;
+  //       std::tie(A, B) = generate_strings<Type>(i, j, 3 * i, seed);
+  //       // printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
+  //       // printf("A: ");
+  //       // for (size_t k = 0; k < A.size(); k++) {
+  //       // printf("%u ", A[k]);
+  //       // }
+  //       // puts("");
+  //       // printf("B: ");
+  //       // for (size_t k = 0; k < B.size(); k++) {
+  //       // printf("%u ", B[k]);
+  //       // }
+  //       // puts("");
+  //       double b_time_1;
+  //       double b_time_2;
+  //       size_t v1 = EditDistanceBlockHashParallel(A, B, &b_time_1);
+  //       size_t v2 = EditDistanceHashParallel(A, B, &b_time_2);
+  //       if (v1 != v2) {
+  //         printf("v1: %zu, v2: %zu\n", v1, v2);
+  //         printf("wrong answer\n");
+  //         if (A.size() < 20) {
+  //           return 0;
+  //         } else {
+  //           getchar();
+  //           // }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   /*
     for real datasets
   */
-  // std::string str_A;
-  // std::string str_B;
-  // parse_text_file_with_blank("./data_prep/data/1.txt", A);
-  // parse_text_file_with_blank("./data_prep/data/2.txt", B);
+  // parlay::sequence<Type> A, B;
+  // parse_text_file_with_blank(path_1, A);
+  // parse_text_file_with_blank(path_2, B);
   // printf("size A: %d\n", A.size());
   // printf("size B: %d\n", B.size());
-  // run_all(A, B, 0);
-  // run_all(A, B, 1);
-  // run_all(A, B, 2);
-  // run_all(A, B, 5);
-  // run_all(A, B, 3);
+  // // run_all(A, B, 6);
+  // run_all(A, B, id);
 
-  return 0;
+  // return 0;
 }

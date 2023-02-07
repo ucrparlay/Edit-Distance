@@ -42,6 +42,9 @@ all : $(ALL)
 test_framework: test_framework.cpp edit_distance_dp.o edit_distance_parallel.o minimum_edit_distance.h dac_mm_k.h dac_mm.h hash_block_parallel.h
 	$(CC) $(CPPFLAGS) test_framework.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o
 
+test_framework_real: test_framework_real.cpp edit_distance_dp.o edit_distance_parallel.o minimum_edit_distance.h dac_mm_k.h dac_mm.h hash_block_parallel.h
+	$(CC) $(CPPFLAGS) test_framework_real.cpp -I$(INCLUDE_DIR) -o $@ edit_distance_dp.o edit_distance_parallel.o
+
 
 suffix_array_test : suffix_array_test.o suffix_array_sequential.o
 	$(CC) $(CPPFLAGS) -o $@ suffix_array_test.o suffix_array_sequential.o

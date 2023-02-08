@@ -44,8 +44,7 @@ class InputParser {
 
 template <typename T>
 auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
-  printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k,
-  alpha);
+  printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k, alpha);
   parlay::sequence<T> A(n), B(n);
   parlay::parallel_for(
       0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha; });
@@ -175,9 +174,7 @@ int main(int argc, char *argv[]) {
   std::string path_2;
 
   InputParser input(argc, argv);
-  if (input.cmdOptionExists("-i")) {
-    id = atoi(argv[1]);
-  }
+  id = atoi(argv[1]);
 
   const std::string &filename1 = input.getCmdOption("-f1");
   if (!filename1.empty()) {
@@ -203,20 +200,17 @@ int main(int argc, char *argv[]) {
     exit(0);
   }
 
-
-
-
-
   /*
     for real datasets
   */
-  // parlay::sequence<Type> A, B;
-  // parse_text_file_with_blank(path_1, A);
-  // parse_text_file_with_blank(path_2, B);
-  // printf("size A: %d\n", A.size());
-  // printf("size B: %d\n", B.size());
-  // // run_all(A, B, 6);
-  // run_all(A, B, id);
+  using Type = uint32_t;
+  parlay::sequence<Type> A, B;
+  parse_text_file_with_blank(path_1, A);
+  parse_text_file_with_blank(path_2, B);
+  printf("size A: %d\n", A.size());
+  printf("size B: %d\n", B.size());
+  // run_all(A, B, 6);
+  run_all(A, B, id);
 
-  // return 0;
+  return 0;
 }

@@ -34,16 +34,16 @@ void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
   // pre-computed power table [p^(BLOCK_SIZE), p^(2 * BLOCK_SIZE), ... p^(logk *
   // BLOCK_SIZE)]
   int LOG2_k = FASTLOG2(k);
-  table_seq = parlay::tabulate(LOG2_k + 1, [&](size_t i) {
-    return parlay::sequence<int>::uninitialized(k - (1 << i) + 1);
+  table_seq = parlay::tabulate(k, [&](size_t i) {
+    return parlay::sequence<int>::uninitialized(LOG2_k + 1);
   });
   // pre-computed log table [1, 2, 4, ..., logk]
 
   // for the first dim of the table
   parlay::parallel_for(0, k, [&](int j) {
-    table_seq[0][j] = 0;
+    table_seq[j][0] = 0;
     for (int b_j = j * BLOCK_SIZE; b_j < (j + 1) * BLOCK_SIZE; b_j++) {
-      table_seq[0][j] +=
+      table_seq[j][0] +=
           (mypower(PRIME_BASE, (j + 1) * BLOCK_SIZE - 1 - b_j) * seq[b_j]);
     }
   });
@@ -52,8 +52,8 @@ void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
     parlay::parallel_for(
         0, k - (1 << i) + 1,
         [&](int j) {
-          table_seq[i][j] = table_seq[i - 1][j] * mypower(PRIME_BASE, i - 1) +
-                            table_seq[i - 1][j + (1 << (i - 1))];
+          table_seq[j][i] = table_seq[j][i - 1] * mypower(PRIME_BASE, i - 1) +
+                            table_seq[j + (1 << (i - 1))][i - 1];
         },
         GRANULARITY);
   }
@@ -114,9 +114,9 @@ void construct_table(T &A, T &B,
       parlay::sequence<std::pair<int, int>>::uninitialized(a_actual_size);
   pre_su_b =
       parlay::sequence<std::pair<int, int>>::uninitialized(b_actual_size);
-  //t.next("first");
-  // pre_su_a.resize(a_actual_size);
-  // pre_su_b.resize(b_actual_size);
+  // t.next("first");
+  //  pre_su_a.resize(a_actual_size);
+  //  pre_su_b.resize(b_actual_size);
 
   // for both prefix and suffix precomputing
 
@@ -136,7 +136,7 @@ void construct_table(T &A, T &B,
       pre_su_a[j].second = pre_su_a[j + 1].second * PRIME_BASE + A[j];
     }
   });
-  //t.next("second");
+  // t.next("second");
 
   parlay::parallel_for(0, num_blocks_b, [&](size_t i) {
     int s = i * BLOCK_SIZE;
@@ -151,7 +151,7 @@ void construct_table(T &A, T &B,
       pre_su_b[j].second = pre_su_b[j + 1].second * PRIME_BASE + B[j];
     }
   });
-  //t.next("third");
+  // t.next("third");
 }
 
 template <typename T>
@@ -166,8 +166,9 @@ bool compare_lcp(int p, int q, int z,
   if (t == 0) {
     return false;
   }
-  if ((p + (1 << z) * t + t) >= (int)(table_A[0].size() * t) ||
-      (q + (1 << z) * t + t) >= (int)(table_B[0].size() * t)) {
+  int size_A = A.size() / t * t;
+  int size_B = B.size() / t * t;
+  if ((p + (1 << z) * t + t) >= size_A || (q + (1 << z) * t + t) >= size_B) {
     return false;
   }
   // if ((p + (1 << z) * t) >= (int)(A.size()) ||
@@ -182,18 +183,18 @@ bool compare_lcp(int p, int q, int z,
   int hash_b_v;
 
   if (p % t == 0) {
-    hash_a_v = table_A[z][p / t] * qpow(t) + table_A[0][p / t + (1 << z)];
+    hash_a_v = table_A[p / t][z] * qpow(t) + table_A[p / t + (1 << z)][0];
   } else {
     hash_a_v = S_A[p].second * qpow((1 << z) * t + t) +
-               (table_A[z][next_block_A]) * qpow(t - rest_A_size) +
+               (table_A[next_block_A][z]) * qpow(t - rest_A_size) +
                S_A[p + (1 << z) * t + t].first;
   }
 
   if (q % t == 0) {
-    hash_b_v = table_B[z][q / t] * qpow(t) + table_B[0][p / t + (1 << z)];
+    hash_b_v = table_B[q / t][z] * qpow(t) + table_B[q / t + (1 << z)][0];
   } else {
     hash_b_v = S_B[q].second * qpow((1 << z) * t + t) +
-               (table_B[z][next_block_B]) * qpow(t - rest_B_size) +
+               (table_B[next_block_B][z]) * qpow(t - rest_B_size) +
                S_B[q + (1 << z) * t + t].first;
   }
   if (hash_a_v == hash_b_v) return true;
@@ -227,8 +228,10 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
   }
   int x = 0;
   // size_t t = S_A.size() / table_A[0].size(); // BLOCK_SIZE
-  while ((p + (t << x) + t < (int)(table_A[0].size() * t)) &&
-         (q + (t << x) + t < (int)(table_B[0].size() * t))) {
+
+  int size_A = A.size() / t * t;
+  int size_B = B.size() / t * t;
+  while ((p + (t << x) + t < size_A) && (q + (t << x) + t < size_B)) {
     if (!compare_lcp(p, q, x, table_A, table_B, S_A, S_B, A, B)) {
       break;
     }

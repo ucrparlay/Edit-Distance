@@ -1,8 +1,8 @@
 
-ifdef GCC
-CC = g++
-else
+ifdef CLANG
 CC = clang++
+else
+CC = g++
 endif
 
 CPPFLAGS = -std=c++17 -Wall -Wextra

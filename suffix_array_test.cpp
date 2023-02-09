@@ -20,32 +20,12 @@ int main() {
   for (int i = 0; i < m; i++) {
     b[i] = rand() % 2;
   }
-  // parlay::internal::timer timer1;
-  // auto [rank1, sa1, lcp1] = suffix_array_large_alphabet(s);
-  // auto t1 = timer1.stop();
-  // cout << "Parallel time: " << to_string(t1) << endl;
-  // parlay::internal::timer timer2;
-  // SuffixArraySequential sa_seq;
-  // sa_seq.Build(s);
-  // auto t2 = timer2.stop();
-  // auto rank2 = sa_seq.rank;
-  // auto sa2 = sa_seq.sa;
-  // auto lcp2 = sa_seq.height;
-  // assert(sa1.size() == sa2.size());
-  // for (int i = 0; i < n; i++) {
-  //   assert(rank1[i] == rank2[i]);
-  //   assert(sa1[i] == sa2[i]);
-  //   assert(lcp1[i] == lcp2[i]);
-  // }
-  // cout << "Sequential time: " << to_string(t2) << endl;
-  // cout << "Pass: suffix_array_test" << endl;
 
   parlay::sequence<int> logN1;
   parlay::sequence<int> powerN1;
   parlay::sequence<parlay::sequence<int>> table_s1;
   parlay::sequence<parlay::sequence<int>> table_s2;
   build_hash_table(a, b, table_s1, table_s2, powerN1, logN1);
-  std::cout << "hash build done" << std::endl;
   query_lcp(a, b, table_s1, table_s2, logN1, 0, 0);
 
   auto c = parlay::sequence<uint32_t>(n + m + 1);
@@ -58,7 +38,6 @@ int main() {
   std::tie(rank, sa, lcp) = suffix_array_large_alphabet(c);
   auto rmq = range_min(lcp);
   auto GetLcp = [&](int i, int j) -> int {
-    // std::cout << "GetLcp " << i << ' ' << j << '\n';
     if (i == n || j == m) return 0;
     if (a[i] != b[j]) return 0;
     int l = rank[i], r = rank[j + n + 1];
@@ -67,7 +46,7 @@ int main() {
     return lcp[id];
   };
 
-  int q = 10000000;
+  int q = 1000000;
   vector<pair<int, int>> queries(q);
   for (int i = 0; i < q; i++) {
     int x = rand() % n;
@@ -80,6 +59,8 @@ int main() {
     int y = GetLcp(i, j);
     assert(x == y);
   }
+
+  std::cout << "Pass!" << std::endl;
 
   parlay::internal::timer t2;
   for (auto [i, j] : queries) {

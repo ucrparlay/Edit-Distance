@@ -207,9 +207,8 @@ int main(int argc, char *argv[]) {
   parlay::sequence<Type> A, B;
   parse_text_file_with_blank(path_1, A);
   parse_text_file_with_blank(path_2, B);
-  printf("size A: %d\n", A.size());
-  printf("size B: %d\n", B.size());
-  // run_all(A, B, 6);
+  printf("size A: %d\n", (int) A.size());
+  printf("size B: %d\n", (int) B.size());
   run_all(A, B, id);
 
   return 0;

@@ -17,3 +17,5 @@ $ cmake ..
 $ make
 $ ./test_framework -1 1000 10
 ```
+
+You can specify the algorithm by the first argument of test_framework. "-1" means run all algorithms.

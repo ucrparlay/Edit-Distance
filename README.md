@@ -4,12 +4,16 @@ Efficient parallel output-sensitive edit-distance implementation.
 
 Authors: ucrparlay
 
+### Requirements
+
+CMake >= 3.15
+
 ### Usage
 
 Clone the repository with submodules
 ```
 $ git clone --recurse-submodules git@github.com:ucrparlay/Edit-Distance.git
-$ cd Edit-distance
+$ cd Edit-Distance
 ```
 
 Build & Run

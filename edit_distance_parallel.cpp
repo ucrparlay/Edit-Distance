@@ -12,9 +12,9 @@
 #include "suffix_array_parallel.h"
 #include "utils.h"
 
-size_t EditDistanceParallel::Solve(const parlay::sequence<uint32_t>& a,
-                                   const parlay::sequence<uint32_t>& b,
-                                   double* building_tm) {
+size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
+                      const parlay::sequence<uint32_t>& b,
+                      double* building_tm) {
   Timer tmr;
   int n = a.size(), m = b.size();
   auto c = parlay::sequence<uint32_t>(n + m + 1);

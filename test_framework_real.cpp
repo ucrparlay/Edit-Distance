@@ -92,7 +92,7 @@ std::string test_name(int id) {
       return "ParlayLib";
       break;
     default:
-      assert(0);
+      abort();
   }
 }
 
@@ -114,7 +114,7 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         num_edits = EditDistanceBlockHashParallel(A, B, &b_time);
         break;
       case 2:
-        num_edits = EditDistanceParallel().Solve(A, B, &b_time);
+        num_edits = EditDistanceSA(A, B, &b_time);
         break;
       case 3:
         num_edits = DAC_MM_K<sequence<uint32_t>>(A, B).solve();
@@ -123,7 +123,7 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         num_edits = DAC_MM<sequence<uint32_t>>(A, B).solve();
         break;
       case 5:
-        num_edits = EditDistanceDP<T>().Solve(A, B);
+        num_edits = EditDistanceDP(A, B);
         break;
       case 6:
         num_edits = minimum_edit_distance(A, B);

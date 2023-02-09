@@ -2,6 +2,8 @@
 
 Efficient parallel output-sensitive edit-distance implementation.
 
+Authors: ucrparlay
+
 ### Usage
 
 Clone the repository with submodules

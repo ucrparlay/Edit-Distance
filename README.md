@@ -1,22 +1,22 @@
 # Edit Distance
-This repository contains code for our paper "Efficient Parallel Output-sensitive Edit Distance".
+This repository contains code for our paper "Efficient Parallel Output-Sensitive Edit Distance".
 
 Requirements
 --------
 + CMake >= 3.15 
-+ g++ or clang with C++17 features support (Tested with g++ 7.5.0 and clang 14.0.6) on Linux machines.
++ g++ or clang with C++17 features support (Tested with g++ 12.1.1 and clang 14.0.6) on Linux machines.
 + We use [ParlayLib](https://github.com/cmuparlay/parlaylib) to support fork-join parallelism and some parallel primitives. It is provided as a submodule in our repository. 
 
 Getting Code
 --------
 Clone the repository with submodules
-```
+```bash
 git clone --recurse-submodules https://github.com/ucrparlay/Edit-Distance.git
 cd Edit-Distance
 ```
 Compilation
 --------
-```
+```bash
 mkdir build && cd build
 cmake ..
 make
@@ -41,12 +41,16 @@ For synthetic dataset:
 + sigma: alphabet size  
 + rounds: number of rounds  
 
-```bash
-./test_framework_real -i <id> -f1 <path to file1> -f2 <path to file2>    # For real world data
+For example, to run all our algorithms on $n=10^9$ and $k=10$:
+```
+./test_framework -1 1000000000 10 256
 ```
 
-You can specify the algorithm by the first argument of test_framework. "-1" means run all our algorithms. You can also specify the algorithm by selecting <algorithm id>, and any two text file paths <path to file1>, <path to file2>.
+For real-world dataset:
+```
+./test_framework_real -i <id> -f1 <path to file1> -f2 <path to file2> 
+```
 
 Reference
 --------
-Xiangyun Ding, Xiaojun Dong, Yan Gu, Youzhe Liu and Yihan Sun. Efficient Parallel Output-sensitive Edit Distance. In submission.
+Xiangyun Ding, Xiaojun Dong, Yan Gu, Youzhe Liu and Yihan Sun. Efficient Parallel Output-Sensitive Edit Distance. In submission.

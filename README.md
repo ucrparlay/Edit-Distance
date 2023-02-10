@@ -1,7 +1,5 @@
-# Edit-Distance
-This repository contains code for our paper "Theoretically Efficient and Practical Parallel Output-sensitive Edit Distance".
-
-Authors: ucrparlay
+# Edit Distance
+This repository contains code for our paper "Efficient Parallel Output-sensitive Edit Distance".
 
 Requirements
 --------

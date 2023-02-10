@@ -11,7 +11,7 @@ Getting Code
 --------
 Clone the repository with submodules
 ```
-git clone https://github.com/ucrparlay/Edit-Distance.git
+git clone --recurse-submodules https://github.com/ucrparlay/Edit-Distance.git
 cd Edit-Distance
 ```
 Compilation
@@ -49,4 +49,4 @@ You can specify the algorithm by the first argument of test_framework. "-1" mean
 
 Reference
 --------
-Xiangyun Ding, Xiaojun Dong, Yan Gu, Youzhe Liu and Yihan Sun. Theoretically Efficient and Practical Parallel Output-sensitive Edit Distance. In submission.
+Xiangyun Ding, Xiaojun Dong, Yan Gu, Youzhe Liu and Yihan Sun. Efficient Parallel Output-sensitive Edit Distance. In submission.

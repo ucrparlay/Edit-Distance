@@ -173,7 +173,38 @@ int main(int argc, char *argv[]) {
   }
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
-  std::tie(A, B) = generate_strings<Type>(n, k, alpha);
+  for (size_t i = 1; i <= 500; i++) {
+    for (size_t j = 3 * i; j >= 1; j -= 3) {
+      for (size_t seed = 0; seed < 1; seed++) {
+        printf("i: %zu, j: %zu\n", i, j);
+        parlay::sequence<Type> A, B;
+        std::tie(A, B) = generate_strings<Type>(i, j, 3 * i, seed);
+        printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
+        printf("A: ");
+        for (size_t k = 0; k < A.size(); k++) {
+          printf("%u ", A[k]);
+        }
+        puts("");
+        printf("B: ");
+        for (size_t k = 0; k < B.size(); k++) {
+          printf("%u ", B[k]);
+        }
+        puts("");
+        double b_time = 0;
+        size_t v1 = EditDistanceDP(A, B);
+        size_t v2 = EditDistanceBlockHashParallel(A, B, &b_time);
+        if (v1 != v2) {
+          printf("v1: %zu, v2: %zu\n", v1, v2);
+          printf("wrong answer\n");
+          if (A.size() < 20) {
+            return 0;
+          } else {
+            getchar();
+          }
+        }
+      }
+    }
+  }
   run_all(A, B, id);
   return 0;
 }

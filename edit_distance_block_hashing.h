@@ -5,6 +5,7 @@
 template <typename Seq>
 int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
                                   double *building_tm) {
+  parlay::internal::timer tt;
   // build sparse table
 
   /**
@@ -25,6 +26,7 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 
   *building_tm = tmr.elapsed();
+  tt.next("building");
   // std::cout << building_tm << ", ";
 
   max_row[Diag(0, 0)] =
@@ -32,7 +34,10 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
 
   // bfs for path
   int k = 0;
+  int round = 0;
   for (;;) {
+    printf("round: %d\n", round++);
+    tt.next("Query");
     if (max_row[Diag(n, m)] == n) break;  // find path
     k++;
     int l = Diag(0, std::min(k, int(m)));

@@ -12,6 +12,8 @@
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
+#include "suffix_array_parallel.h"
+#include "range_min.h"
 #include "minimum_edit_distance.h"
 
 constexpr size_t NUM_TESTS = 4;
@@ -173,38 +175,61 @@ int main(int argc, char *argv[]) {
   }
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
-  for (size_t i = 1; i <= 500; i++) {
-    for (size_t j = 3 * i; j >= 1; j -= 3) {
-      for (size_t seed = 0; seed < 1; seed++) {
-        printf("i: %zu, j: %zu\n", i, j);
-        parlay::sequence<Type> A, B;
-        std::tie(A, B) = generate_strings<Type>(i, j, 3 * i, seed);
-        printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
-        printf("A: ");
-        for (size_t k = 0; k < A.size(); k++) {
-          printf("%u ", A[k]);
-        }
-        puts("");
-        printf("B: ");
-        for (size_t k = 0; k < B.size(); k++) {
-          printf("%u ", B[k]);
-        }
-        puts("");
-        double b_time = 0;
-        size_t v1 = EditDistanceDP(A, B);
-        size_t v2 = EditDistanceBlockHashParallel(A, B, &b_time);
-        if (v1 != v2) {
-          printf("v1: %zu, v2: %zu\n", v1, v2);
-          printf("wrong answer\n");
-          if (A.size() < 20) {
-            return 0;
-          } else {
-            getchar();
-          }
-        }
-      }
-    }
-  }
+  std::tie(A, B) = generate_strings<Type>(n, k, alpha);
   run_all(A, B, id);
+
+  // parlay::sequence<int> a(1000), b(1000);
+  // for (int i = 0; i < 1000; i++) {
+  //   a[i] = rand() % 1000;
+  //   b[i] = rand() % 1000;
+  // }
+  // auto n = a.size(), m = b.size();
+
+  // auto c = parlay::sequence<uint32_t>(n + m + 1);
+  // parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
+  // parlay::parallel_for(0, m, [&](int i) { c[i + n + 1] = b[i]; });
+  // c[n] = std::numeric_limits<uint32_t>::max();
+  // auto rank = parlay::sequence<unsigned int>();
+  // auto sa = parlay::sequence<unsigned int>();
+  // auto lcp = parlay::sequence<unsigned int>();
+  // std::tie(rank, sa, lcp) = suffix_array_large_alphabet(c);
+  // auto rmq = range_min(lcp);
+  // auto GetLcp = [&](int i, int j) -> int {
+  //   // std::cout << "GetLcp " << i << ' ' << j << '\n';
+  //   if (i == n || j == m) return 0;
+  //   assert(0 <= i && i < n && 0 <= j && j < m);
+  //   for (int k = 0; k < 8; k++) {
+  //     if (i + k >= n || j + k >= m || a[i + k] != b[j + k]) {
+  //       return k;
+  //     }
+  //   }
+  //   int l = rank[i], r = rank[j + n + 1];
+  //   if (l > r) std::swap(l, r);
+  //   assert(l < r);
+  //   int id = rmq.query(l + 1, r);
+  //   return lcp[id];
+  // };
+
+  // parlay::sequence<parlay::sequence<int>> table_A;
+  // parlay::sequence<parlay::sequence<int>> table_B;
+  // parlay::sequence<std::pair<int, int>> S_A;
+  // parlay::sequence<std::pair<int, int>> S_B;
+  // construct_table(a, b, table_A, table_B, S_A, S_B, std::min(n, m));
+  // auto res = block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B);
+  // // cout << "res: " << res << endl;
+
+  // for (int i = 0; i < 100; i++) {
+  //   int p = rand() % n;
+  //   int q = rand() % m;
+  //   int res1 = GetLcp(p, q);
+  //   int res2 = block_query_lcp(p, q, a, b, table_A, table_B, S_A, S_B);
+  //   if (res1 != res2) {
+  //     cout << "error: " << p << ' ' << q << endl;
+  //     abort();
+  //   }
+  // }
+
+  // cout << "good" << endl;
+
   return 0;
 }

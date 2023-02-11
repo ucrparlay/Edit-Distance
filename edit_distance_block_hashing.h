@@ -36,8 +36,8 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
   int k = 0;
   int round = 0;
   for (;;) {
-    printf("round: %d\n", round++);
-    tt.next("Query");
+    // printf("round: %d\n", round++);
+    // tt.next("Query");
     if (max_row[Diag(n, m)] == n) break;  // find path
     k++;
     int l = Diag(0, std::min(k, int(m)));

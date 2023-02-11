@@ -3,7 +3,7 @@
 
 #include "utils.h"
 using namespace std;
-constexpr int BLOCK_SIZE = 2;
+constexpr int BLOCK_SIZE = 32;
 constexpr int GRANULARITY = 512;
 
 // auxiliary function for power x^p
@@ -210,11 +210,11 @@ bool compare_lcp(int p, int q, int z,
   size_t rest_A_size = next_block_A * t - p;
   size_t rest_B_size = next_block_B * t - q;
 
-  int tail_A = (t - head_A);
-  int tail_B = (t - head_B);
+  // int tail_A = (t - head_A);
+  // int tail_B = (t - head_B);
 
-  assert(head_A == rest_A_size);
-  assert(head_B == rest_B_size);
+  // // assert(head_A == rest_A_size);
+  // // assert(head_B == rest_B_size);
 
   int hash_a_v;
   int hash_b_v;
@@ -231,7 +231,7 @@ bool compare_lcp(int p, int q, int z,
   }
 
   if (q % t == 0) {
-    hash_b_v = table_A[q / t][z] * qpow(t) + table_A[q / t + (1 << z)][0];
+    hash_b_v = table_B[q / t][z] * qpow(t) + table_B[q / t + (1 << z)][0];
   } else {
     //printf("%d %d %d\n", S_B[q].second * qpow((1 << z) * t + (t - rest_B_size)),
            //(table_B[next_block_B][z]) * qpow(t - rest_B_size),
@@ -310,7 +310,7 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
     pp++;
     qq++;
   }
-  printf("p: %d, q: %d, steps: %d, cnt: %d\n", p, q, pp - p, cnt);
+  // printf("p: %d, q: %d, steps: %d, cnt: %d\n", p, q, pp - p, cnt);
 
   // exit(0);
   return pp - p;

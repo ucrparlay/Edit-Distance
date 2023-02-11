@@ -11,7 +11,7 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-option(DEBUG "" OFF)
+option(DEBUG "" ON)
 option(CILKPLUS "" OFF)
 option(OPENCILK "" OFF)
 option(SERIAL "" OFF)

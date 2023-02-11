@@ -34,19 +34,19 @@ void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
   // pre-computed power table [p^(BLOCK_SIZE), p^(2 * BLOCK_SIZE), ... p^(logk *
   // BLOCK_SIZE)]
   int LOG2_k = FASTLOG2(k);
-  table_seq = parlay::tabulate(k, [&](size_t i) {
-    return parlay::sequence<int>::uninitialized(LOG2_k + 1);
+  table_seq = parlay::tabulate(LOG2_k + 1, [&](size_t i) {
+    return parlay::sequence<int>::uninitialized(k);
   });
   // pre-computed log table [1, 2, 4, ..., logk]
 
   // for the first dim of the table
   parlay::parallel_for(0, k, [&](int j) {
-    table_seq[j][0] = 0;
+    table_seq[0][j] = 0;
     int p = 1;
     int s = j * BLOCK_SIZE;
     int e = (j + 1) * BLOCK_SIZE;
     for (int b_j = e - 1; b_j >= s; b_j--) {
-      table_seq[j][0] += seq[b_j] * p;
+      table_seq[0][j] += seq[b_j] * p;
       p *= PRIME_BASE;
     }
     // for (int b_j = j * BLOCK_SIZE; b_j < (j + 1) * BLOCK_SIZE; b_j++) {
@@ -62,10 +62,10 @@ void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
         [&](int j) {
           // printf("table_seq[%d][%d]=table[%d][%d] (%d) * PRIME ^ (%d)\n", j,
           // i - 1, j + (1 << (i-1)), i - 1,
-          table_seq[j][i] =
-              table_seq[j][i - 1] *
+          table_seq[i][j] =
+              table_seq[i - 1][j] *
                   mypower(PRIME_BASE, BLOCK_SIZE * (1 << (i - 1))) +
-              table_seq[j + (1 << (i - 1))][i - 1];
+              table_seq[i - 1][j + (1 << (i - 1))];
         },
         GRANULARITY);
   }
@@ -220,24 +220,24 @@ bool compare_lcp(int p, int q, int z,
   int hash_b_v;
 
   if (p % t == 0) {
-    hash_a_v = table_A[p / t][z] * qpow(t) + table_A[p / t + (1 << z)][0];
+    hash_a_v = table_A[z][p / t] * qpow(t) + table_A[0][p / t + (1 << z)];
   } else {
     //printf("%d %d %d\n", S_A[p].second * qpow((1 << z) * t + (t - rest_A_size)),
            //(table_A[next_block_A][z]) * qpow(t - rest_A_size),
            //S_A[p + (1 << z) * t + t - 1].first);
     hash_a_v = S_A[p].second * qpow((1 << z) * t + (t - rest_A_size)) +
-               (table_A[next_block_A][z]) * qpow(t - rest_A_size) +
+               (table_A[z][next_block_A]) * qpow(t - rest_A_size) +
                S_A[p + (1 << z) * t + t - 1].first;
   }
 
   if (q % t == 0) {
-    hash_b_v = table_B[q / t][z] * qpow(t) + table_B[q / t + (1 << z)][0];
+    hash_b_v = table_B[z][q / t] * qpow(t) + table_B[0][q / t + (1 << z)];
   } else {
     //printf("%d %d %d\n", S_B[q].second * qpow((1 << z) * t + (t - rest_B_size)),
            //(table_B[next_block_B][z]) * qpow(t - rest_B_size),
            //S_B[q + (1 << z) * t + t - 1].first);
     hash_b_v = S_B[q].second * qpow((1 << z) * t + (t - rest_B_size)) +
-               (table_B[next_block_B][z]) * qpow(t - rest_B_size) +
+               (table_B[z][next_block_B]) * qpow(t - rest_B_size) +
                S_B[q + (1 << z) * t + t - 1].first;
   }
   //printf("z: %d, p: %d, q: %d, hash_a_v: %d, hash_b_v: %d\n", z, p, q, hash_a_v,

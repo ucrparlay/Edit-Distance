@@ -29,10 +29,10 @@ endif()
 
 if(DEBUG)
   set(CMAKE_BUILD_TYPE "Debug")
-  add_compile_options(-Og -mcx16 -DDEBUG -g -Wall -Wextra)
+  add_compile_options(-O3 -mcx16 -march=native)
 else()
   set(CMAKE_BUILD_TYPE "Release")
-  add_compile_options( -O3 -mcx16 -march=native)
+  add_compile_options(-O3 -mcx16 -march=native)
 endif()
 
 if(STDALLOC)

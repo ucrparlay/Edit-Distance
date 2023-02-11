@@ -17,10 +17,9 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
                       double* building_tm) {
   Timer tmr;
   int n = a.size(), m = b.size();
-  auto c = parlay::sequence<uint32_t>(n + m + 1);
+  auto c = parlay::sequence<uint32_t>(n + m);
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
-  parlay::parallel_for(0, m, [&](int i) { c[i + n + 1] = b[i]; });
-  c[n] = std::numeric_limits<uint32_t>::max();
+  parlay::parallel_for(0, m, [&](int i) { c[i + n] = b[i]; });
   auto rank = parlay::sequence<unsigned int>();
   auto sa = parlay::sequence<unsigned int>();
   auto lcp = parlay::sequence<unsigned int>();
@@ -35,11 +34,11 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         return k;
       }
     }
-    int l = rank[i], r = rank[j + n + 1];
+    int l = rank[i], r = rank[j + n];
     if (l > r) std::swap(l, r);
     assert(l < r);
     int id = rmq.query(l + 1, r);
-    return lcp[id];
+    return std::min(lcp[id], (unsigned int)n - i);
   };
   *building_tm = tmr.elapsed();
   // std::cout << " building time of SA: " << building_tm << std::endl;

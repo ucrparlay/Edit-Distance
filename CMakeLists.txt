@@ -11,7 +11,6 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-option(DEBUG "" ON)
 option(CILKPLUS "" OFF)
 option(OPENCILK "" OFF)
 option(SERIAL "" OFF)
@@ -27,13 +26,7 @@ else()
   add_compile_options(-pthread)
 endif()
 
-if(DEBUG)
-  set(CMAKE_BUILD_TYPE "Debug")
-  add_compile_options(-O3 -mcx16 -march=native)
-else()
-  set(CMAKE_BUILD_TYPE "Release")
-  add_compile_options(-O3 -mcx16 -march=native)
-endif()
+add_compile_options(-O3 -mcx16 -march=native)
 
 if(STDALLOC)
   add_compile_options(-DPARLAY_USE_STD_ALLOC)
@@ -41,15 +34,11 @@ endif()
 
 add_subdirectory(parlaylib)
 
-add_library(edit_distance INTERFACE)
-target_include_directories(edit_distance INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(edit_distance INTERFACE edit_distance_parallel suffix_array_sequential)
-
 add_executable(test_framework test_framework.cpp)
-target_link_libraries(test_framework PUBLIC edit_distance_parallel)
+target_link_libraries(test_framework PUBLIC edit_distance_parallel parlay)
 
 add_executable(test_framework_real test_framework_real.cpp)
-target_link_libraries(test_framework_real PUBLIC edit_distance_parallel)
+target_link_libraries(test_framework_real PUBLIC edit_distance_parallel parlay)
 
 add_library(edit_distance_parallel edit_distance_parallel.cpp)
 target_link_libraries(edit_distance_parallel PUBLIC parlay)

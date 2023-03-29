@@ -12,9 +12,9 @@
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
-#include "suffix_array_parallel.h"
-#include "range_min.h"
 #include "minimum_edit_distance.h"
+#include "range_min.h"
+#include "suffix_array_parallel.h"
 
 constexpr size_t NUM_TESTS = 4;
 size_t num_rounds = 3;
@@ -68,6 +68,9 @@ std::string test_name(int id) {
     case 6:
       return "ParlayLib";
       break;
+    case 7:
+      return "BFS-SA-DC3";
+      break;
     default:
       abort();
   }
@@ -104,6 +107,9 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         break;
       case 6:
         num_edits = minimum_edit_distance(A, B);
+        break;
+      case 7:
+        num_edits = EditDistanceSA(A, B, &b_time, true);
         break;
       default:
         assert(0);

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+#include "dc3.h"
 #include "hash_lcp_parallel.h"
 #include "parlay/internal/get_time.h"
 #include "parlay/parallel.h"
@@ -12,13 +13,13 @@
 using namespace std;
 
 int main() {
-  int n = 1000, m = 1000;
+  int n = 100000, m = 100000;
   parlay::sequence<int> a(n), b(m);
   for (int i = 0; i < n; i++) {
-    a[i] = rand() % 2;
+    a[i] = rand() % 10000;
   }
   for (int i = 0; i < m; i++) {
-    b[i] = rand() % 2;
+    b[i] = rand() % 10000;
   }
 
   parlay::sequence<int> logN1;
@@ -28,22 +29,26 @@ int main() {
   build_hash_table(a, b, table_s1, table_s2, powerN1, logN1);
   query_lcp(a, b, table_s1, table_s2, logN1, 0, 0);
 
-  auto c = parlay::sequence<uint32_t>(n + m + 1);
+  auto c = parlay::sequence<uint32_t>(n + m);
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
-  parlay::parallel_for(0, m, [&](int i) { c[i + n + 1] = b[i]; });
-  c[n] = std::numeric_limits<uint32_t>::max();
+  parlay::parallel_for(0, m, [&](int i) { c[i + n] = b[i]; });
   auto rank = parlay::sequence<unsigned int>();
   auto sa = parlay::sequence<unsigned int>();
   auto lcp = parlay::sequence<unsigned int>();
+  auto rank2 = rank, sa2 = sa, lcp2 = lcp;
   std::tie(rank, sa, lcp) = suffix_array_large_alphabet(c);
+  std::tie(rank2, sa2, lcp2) = DC3(c);
+  assert(rank == rank2);
+  assert(sa == sa2);
+  assert(lcp == lcp2);
   auto rmq = range_min(lcp);
   auto GetLcp = [&](int i, int j) -> int {
     if (i == n || j == m) return 0;
     if (a[i] != b[j]) return 0;
-    int l = rank[i], r = rank[j + n + 1];
+    int l = rank[i], r = rank[j + n];
     if (l > r) std::swap(l, r);
     int id = rmq.query(l + 1, r);
-    return lcp[id];
+    return std::min(lcp[id], (unsigned int)n - i);
   };
 
   int q = 1000000;

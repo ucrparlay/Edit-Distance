@@ -6,6 +6,7 @@
 #include <limits>
 #include <vector>
 
+#include "dc3.h"
 #include "parlay/sequence.h"
 #include "range_min.h"
 #include "sparse_table_sequential.h"
@@ -13,8 +14,8 @@
 #include "utils.h"
 
 size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
-                      const parlay::sequence<uint32_t>& b,
-                      double* building_tm) {
+                      const parlay::sequence<uint32_t>& b, double* building_tm,
+                      bool use_DC3) {
   Timer tmr;
   int n = a.size(), m = b.size();
   auto c = parlay::sequence<uint32_t>(n + m);
@@ -23,7 +24,11 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
   auto rank = parlay::sequence<unsigned int>();
   auto sa = parlay::sequence<unsigned int>();
   auto lcp = parlay::sequence<unsigned int>();
-  std::tie(rank, sa, lcp) = suffix_array_large_alphabet(c);
+  if (use_DC3) {
+    std::tie(rank, sa, lcp) = DC3(c);
+  } else {
+    std::tie(rank, sa, lcp) = suffix_array_large_alphabet(c);
+  }
   auto rmq = range_min(lcp);
   auto GetLcp = [&](int i, int j) -> int {
     // std::cout << "GetLcp " << i << ' ' << j << '\n';

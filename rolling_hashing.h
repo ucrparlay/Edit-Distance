@@ -98,19 +98,21 @@ void build_rolling(const Seq &s1, const Seq &s2,
 }
 
 // query hash value from i to j
-int get_hash(const parlay::sequence<uint32_t> &hash_table, size_t i, size_t j) {
-  int value_s = hash_table[i - 1];
-  int value_t = hash_table[j];
-  int pw_diff = q_power(PRIME, j - i + 1);
-  int res = value_t - value_s * pw_diff;
+uint32_t get_hash(const parlay::sequence<uint32_t> &hash_table, size_t i,
+                  size_t j) {
+  uint32_t value_s = hash_table[i - 1];
+  uint32_t value_t = hash_table[j];
+  uint32_t pw_diff = q_power(PRIME, j - i + 1);
+  uint32_t res = value_t - value_s * pw_diff;
   return res;
 }
 
 template <typename T>
-int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
-                  const parlay::sequence<uint32_t> &table1,
-                  const parlay::sequence<uint32_t> &table2, size_t i,
-                  size_t j) {
+int query_rolling(const parlay::sequence<T> &s1,
+                       const parlay::sequence<T> &s2,
+                       const parlay::sequence<uint32_t> &table1,
+                       const parlay::sequence<uint32_t> &table2, size_t i,
+                       size_t j) {
   if (s1[i] != s2[j]) return 0;
   int r = std::min(s1.size() - i, s2.size() - j);
   // std::cout << "r value: " << r << std::endl;

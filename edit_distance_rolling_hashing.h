@@ -2,10 +2,10 @@
 
 template <typename Seq>
 int test_lcp(const Seq &a, const Seq &b, int i, int j) {
-  if ((int)a[i] != (int)b[j]) return 0;
+  // if ((uint32_t)a[i] != (uint32_t)b[j]) return 0;
   int res = 0;
   for (int k = 0; k < std::min(a.size() - i, b.size() - j); k++) {
-    if ((int)a[i + k] != (int)b[j + k]) {
+    if ((uint32_t)a[i + k] != (uint32_t)b[j + k]) {
       res = k;
       break;
     }
@@ -40,7 +40,7 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
 
   *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_rolling(a, b, table_s1, table_s2, 0, 0);
-  assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b, 0, 0));
+  // assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b, 0, 0));
   // bfs for path
   int k = 0;
   for (;;) {

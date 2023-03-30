@@ -73,6 +73,11 @@ void build_rolling(const Seq &s1, const Seq &s2,
   table_s1.resize(table1_size);
   table_s2.resize(table2_size);
 
+  // parlay::sequence<uint32_t> check_1;
+  // parlay::sequence<uint32_t> check_2;
+  // check_1.resize(table1_size);
+  // check_2.resize(table2_size);
+
   // prefix sum
   // for table_1
   parlay::parallel_for(0, table1_size,
@@ -83,8 +88,20 @@ void build_rolling(const Seq &s1, const Seq &s2,
   // for (int j = 1; j < table1_size; j++) {
   //   table_s1[j] = (uint32_t)(table_s1[j - 1] * PRIME + table_s1[j]);
   // }
-
   s_inplace_scan_inclusive(table_s1, table1_size);
+
+  // parlay::parallel_for(0, table1_size,
+  //                      [&](uint32_t i) { check_1[i] = (uint32_t)(s1[i]); });
+
+  // for (int j = 1; j < table1_size; j++) {
+  //   check_1[j] = (uint32_t)(check_1[j - 1] * PRIME + check_1[j]);
+  // }
+  // for (int i = 0; i < table1_size; i++) {
+  //   if (check_1[i] != table_s1[i]) {
+  //     std::cout << "error at " << i << std::endl;
+  //     break;
+  //   }
+  // }
 
   // for table 2
   parlay::parallel_for(0, table2_size,
@@ -108,18 +125,17 @@ uint32_t get_hash(const parlay::sequence<uint32_t> &hash_table, size_t i,
 }
 
 template <typename T>
-int query_rolling(const parlay::sequence<T> &s1,
-                       const parlay::sequence<T> &s2,
-                       const parlay::sequence<uint32_t> &table1,
-                       const parlay::sequence<uint32_t> &table2, size_t i,
-                       size_t j) {
-  if (s1[i] != s2[j]) return 0;
-  int r = std::min(s1.size() - i, s2.size() - j);
+int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
+                  const parlay::sequence<uint32_t> &table1,
+                  const parlay::sequence<uint32_t> &table2, size_t i,
+                  size_t j) {
+  if ((uint32_t)s1[i] != (uint32_t)s2[j]) return 0;
+  int r = std::min(s1.size() - i, s2.size() - j) - 1;
   // std::cout << "r value: " << r << std::endl;
 
   int l = 0;
   int res = 0;
-  if (r == 1) {
+  if (r == 0) {
     return 1;
   }
   while (l <= r) {

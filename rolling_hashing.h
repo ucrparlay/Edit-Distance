@@ -5,13 +5,64 @@
 #include "utils.h"
 
 using namespace parlay;
-static constexpr int PRIME = 479;
+// static constexpr int PRIME = 479;
 
-// a binary associative operator
-auto f = [](const uint32_t &a, const uint32_t &b) -> uint32_t {
-  return a * PRIME + b;
-};
-auto mul_add = parlay::binary_op(f, 0);
+uint32_t q_power(uint32_t base, size_t n) {
+  uint32_t ret = 1;
+  uint32_t a = base;
+  while (n) {
+    if (n & 1) {
+      ret = ret * a;
+    }
+    a = a * a;
+    n >>= 1;
+  }
+  return ret;
+}
+
+/**
+ * Inplace inclusive scan
+ */
+template <typename Seq>
+void s_inplace_scan_inclusive(Seq &A, size_t n) {
+  auto block_size = std::max((size_t)(8000), (size_t)std::sqrt(n));
+  if (n <= 100000) {
+    for (size_t i = 1; i < n; i++) {
+      A[i] += A[i - 1] * PRIME;
+    }
+  } else {
+    uint32_t power_table[block_size];
+    power_table[0] = PRIME;
+    for (int i = 1; i < block_size; i++) {
+      power_table[i] = (uint32_t)(PRIME * power_table[i - 1]);
+    }
+    size_t num_blocks = (n - 1) / block_size + 1;
+    uint32_t p_sum[num_blocks];
+
+    parlay::parallel_for(0, num_blocks, [&](size_t i) {
+      // aux[i] = inplace_seq_scan_exclusive_direct(
+      //     A, l + i * block_size, std::min(l + i * block_size + block_size,
+      //     r));
+      for (size_t j = i * block_size + 1; j < std::min((i + 1) * block_size, n);
+           j++) {
+        A[j] += A[j - 1] * PRIME;
+      }
+    });
+    p_sum[0] = A[block_size - 1];
+    for (size_t k = 1; k < num_blocks; k++) {
+      p_sum[k] = A[(k + 1) * block_size - 1] +
+                 p_sum[k - 1] * power_table[block_size - 1];
+    }
+
+    parlay::parallel_for(1, num_blocks, [&](size_t i) {
+      for (size_t j = i * block_size;
+           j < std::min(i * block_size + block_size, n); j++) {
+        A[j] += p_sum[j / block_size - 1] *
+                power_table[j - block_size * (j / block_size)];
+      }
+    });
+  }
+}
 
 template <typename Seq>
 void build_rolling(const Seq &s1, const Seq &s2,
@@ -29,25 +80,28 @@ void build_rolling(const Seq &s1, const Seq &s2,
   // size_t block_size_1 = std::sqrt(table1_size);
 
   // auto ress = parlay::scan_inclusive(table_s1, mul_add);
-  for (int j = 1; j < table1_size; j++) {
-    table_s1[j] = (uint32_t)(table_s1[j - 1] * PRIME + table_s1[j]);
-  }
+  // for (int j = 1; j < table1_size; j++) {
+  //   table_s1[j] = (uint32_t)(table_s1[j - 1] * PRIME + table_s1[j]);
+  // }
+
+  s_inplace_scan_inclusive(table_s1, table1_size);
 
   // for table 2
   parlay::parallel_for(0, table2_size,
                        [&](int i) { table_s2[i] = int(s2[i]); });
   // size_t block_size_1 = std::sqrt(table1_size);
-  for (int j = 1; j < table2_size; j++) {
-    table_s2[j] += table_s2[j - 1] * PRIME;
-  }
+  // for (int j = 1; j < table2_size; j++) {
+  //   table_s2[j] += table_s2[j - 1] * PRIME;
+  // }
   // parlay::scan_inclusive_inplace(parlay::make_slice(table_s2), mul_add);
+  s_inplace_scan_inclusive(table_s2, table2_size);
 }
 
 // query hash value from i to j
 int get_hash(const parlay::sequence<uint32_t> &hash_table, size_t i, size_t j) {
   int value_s = hash_table[i - 1];
   int value_t = hash_table[j];
-  int pw_diff = quick_power(PRIME, j - i + 1);
+  int pw_diff = q_power(PRIME, j - i + 1);
   int res = value_t - value_s * pw_diff;
   return res;
 }

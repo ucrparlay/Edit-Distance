@@ -25,8 +25,8 @@ uint32_t q_power(uint32_t base, size_t n) {
  */
 template <typename Seq>
 void s_inplace_scan_inclusive(Seq &A, size_t n) {
-  auto block_size = std::max((size_t)(8000), (size_t)std::sqrt(n));
-  if (n <= 100000) {
+  auto block_size = std::max((size_t)(1000), (size_t)std::sqrt(n));
+  if (n <= 10000000) {
     for (size_t i = 1; i < n; i++) {
       A[i] += A[i - 1] * PRIME;
     }
@@ -105,7 +105,7 @@ void build_rolling(const Seq &s1, const Seq &s2,
 
   // for table 2
   parlay::parallel_for(0, table2_size,
-                       [&](int i) { table_s2[i] = int(s2[i]); });
+                       [&](int i) { table_s2[i] = (uint32_t)(s2[i]); });
   // size_t block_size_1 = std::sqrt(table1_size);
   // for (int j = 1; j < table2_size; j++) {
   //   table_s2[j] += table_s2[j - 1] * PRIME;

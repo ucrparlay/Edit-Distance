@@ -130,10 +130,18 @@ int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
                   const parlay::sequence<uint32_t> &table2, size_t i,
                   size_t j) {
   if ((uint32_t)s1[i] != (uint32_t)s2[j]) return 0;
+  int try_r = 1;
   int r = std::min(s1.size() - i, s2.size() - j) - 1;
+  while (get_hash(table1, i, i + try_r) == get_hash(table2, j, j + try_r) &&
+         try_r <= r) {
+    try_r *= 2;
+  }
+
+  r = try_r;
+
   // std::cout << "r value: " << r << std::endl;
 
-  int l = 0;
+  int l = try_r / 2;
   int res = 0;
   if (r == 0) {
     return 1;

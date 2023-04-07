@@ -1,17 +1,5 @@
 #include "rolling_hashing.h"
 
-template <typename Seq>
-int test_lcp(const Seq &a, const Seq &b, int i, int j) {
-  // if ((uint32_t)a[i] != (uint32_t)b[j]) return 0;
-  int res = 0;
-  for (int k = 0; k < std::min(a.size() - i, b.size() - j); k++) {
-    if ((uint32_t)a[i + k] != (uint32_t)b[j + k]) {
-      res = k;
-      break;
-    }
-  }
-  return res;
-}
 
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
@@ -57,23 +45,6 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
           t = i;
         } else {
           int get_lcp = query_rolling(a, b, table_s1, table_s2, i + 1, j + 1);
-
-          // test
-          // if (query_rolling(a, b, table_s1, table_s2, i + 1, j + 1) !=
-          //     test_lcp(a, b, i + 1, j + 1)) {
-          //   std::cout << "my: "
-          //             << query_rolling(a, b, table_s1, table_s2, i + 1, j +
-          //             1)
-          //             << std::endl;
-          //   std::cout << "corr: " << test_lcp(a, b, i + 1, j + 1) <<
-          //   std::endl; std::cout << "a: " << a[i + 1] << " " << a[i + 2] << "
-          //   " << a[i + 3]
-          //             << std::endl;
-          //   std::cout << "b: " << b[j + 1] << " " << b[j + 2] << " " << b[j +
-          //   3]
-          //             << std::endl;
-          // }
-
           t = i + 1 + get_lcp;
         }
       }

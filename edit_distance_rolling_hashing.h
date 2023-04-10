@@ -1,6 +1,5 @@
 #include "rolling_hashing.h"
 
-
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
 template <typename Seq>
@@ -28,8 +27,10 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
 
   *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_rolling(a, b, table_s1, table_s2, 0, 0);
-  // assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b, 0, 0));
-  // bfs for path
+  // std::cout << "rolling lcp: " << query_rolling(a, b, table_s1, table_s2, 0, 0)
+  //           << std::endl;
+  // assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b, 0,
+  // 0)); bfs for path
   int k = 0;
   for (;;) {
     if (max_row[Diag(n, m)] == n) break;  // find path

@@ -25,8 +25,8 @@ uint32_t q_power(uint32_t base, size_t n) {
  */
 template <typename Seq>
 void s_inplace_scan_inclusive(Seq &A, size_t n) {
-  auto block_size = std::max((size_t)(1000), (size_t)std::sqrt(n));
-  if (n <= 1000000) {
+  auto block_size = std::max((size_t)(5000), (size_t)std::sqrt(n));
+  if (n <= 100000) {
     for (size_t i = 1; i < n; i++) {
       A[i] += A[i - 1] * PRIME;
     }
@@ -100,29 +100,31 @@ int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
                   const parlay::sequence<uint32_t> &table1,
                   const parlay::sequence<uint32_t> &table2, size_t i,
                   size_t j) {
+  if ((uint32_t)i >= s1.size() || (uint32_t)j >= s2.size()) return 0;
   if ((uint32_t)s1[i] != (uint32_t)s2[j]) return 0;
-  int try_r = 1;
-  int r = std::min(s1.size() - i, s2.size() - j) - 1;
-  while (get_hash(table1, i, i + try_r) == get_hash(table2, j, j + try_r) &&
-         try_r <= r) {
+  uint32_t try_r = 1;
+  uint32_t r = std::min(s1.size() - i, s2.size() - j);
+  uint32_t l = 0;
+  while (try_r <= r &&
+         get_hash(table1, i, i + try_r) == get_hash(table2, j, j + try_r)) {
+    l = try_r;
     try_r *= 2;
   }
 
-  r = try_r;
-  int l = try_r / 2;
-  int res = 0;
-  if (r == 0) {
-    return 1;
-  }
+  r = std::min(try_r, r);
+  // std::cout << "l: " << l << " "
+  //           << "r: " << r << std::endl;
+  uint32_t res = 0;
   while (l <= r) {
-    int m = l + (r - l) / 2;
-    if (get_hash(table1, i, i + m) == get_hash(table2, j, j + m)) {
-      res = m + 1;
+    uint32_t m = l + (r - l) / 2;
+    if (get_hash(table1, i, i + m - 1) == get_hash(table2, j, j + m - 1)) {
+      res = m;
       l = m + 1;
     } else {
       r = m - 1;
     }
   }
+  // std::cout << "res: " << res << std::endl;
   return res;
 }
 

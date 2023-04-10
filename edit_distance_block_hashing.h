@@ -29,9 +29,7 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
   tt.next("building");
   // std::cout << building_tm << ", ";
 
-  max_row[Diag(0, 0)] =
-      block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B);
-
+  max_row[Diag(0, 0)] = block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B);
   // bfs for path
   int k = 0;
   int round = 0;

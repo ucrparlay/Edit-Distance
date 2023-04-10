@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
   run_all(A, B, id);
 
-  // for (size_t i = 10; i <= 3000; i++) {
+  // for (size_t i = 1; i <= 3000; i++) {
   //   for (size_t j = 3 * i; j >= 1; j -= 3) {
   //     printf("i: %zu, j: %zu\n", i, j);
   //     parlay::sequence<Type> A, B;
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
   //     // puts("");
   //     double b_time;
   //     size_t v1 = EditDistanceHashParallel(A, B, &b_time);
-  //     size_t v2 = EditDistanceHashParallel(A, B, &b_time);
+  //     size_t v2 = EditDistanceRollingHash(A, B, &b_time);
   //     if (v1 != v2) {
   //       printf("v1: %zu, v2: %zu\n", v1, v2);
   //       printf("wrong answer\n");

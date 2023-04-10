@@ -25,11 +25,50 @@
 #include "parlay/primitives.h"
 #include "parlay/sequence.h"
 
-constexpr int PRIME_BASE = 479;
+constexpr uint32_t PRIME_BASE = 479;
+constexpr uint32_t PRIME = 479;
+
 // const int PRIME_BASE = 631;
 
 #define FASTLOG2(X) \
   ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((X)) - 1))
+
+// /**
+//  * Inplace block scan DIRECTLY without filter
+//  */
+// template <typename Seq>
+// void s_inplace_scan_inclusive(Seq& A, size_t n) {
+//   auto block_size = std::max((size_t)(8000), (size_t)std::sqrt(r - l));
+//   if (r - l <= 100000) {
+//     for (size_t i = 1; i < n; i++) {
+//       A[i] += A[i - 1] * PRIME;
+//     }
+//   } else {
+//     size_t num_blocks = (r - l - 1) / block_size + 1;
+//     parlay::parallel_for(0, num_blocks, [&](size_t i) {
+//       // aux[i] = inplace_seq_scan_exclusive_direct(
+//       //     A, l + i * block_size, std::min(l + i * block_size + block_size,
+//       //     r));
+//       for (size_t j = i * block_size + 1; j < std::min((i + 1) * block_size,
+//       n);
+//            j++) {
+//         A[i] += A[i - 1] * PRIME;
+//       }
+//     });
+
+//     for (size_t k = 1; k < num_blocks; k++) {
+//       A[(k + 1) * block_size - 1] +=
+//           A[k * block_size - 1] * quick_power(block_size);
+//     }
+
+//     parlay::parallel_for(1, num_blocks, [&](size_t i) {
+//       for (size_t j = i * block_size;
+//            j < std::min(i * block_size + block_size, r); j++) {
+//         A[j] += A[block_size * (j / block_size) - 1];
+//       }
+//     });
+//   }
+// }
 
 // Function to parse a file with single-line string to
 // parlay sequence.

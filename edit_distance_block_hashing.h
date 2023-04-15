@@ -1,5 +1,5 @@
 #include "hash_block_parallel.h"
-
+using hash_T = int64_t;
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
 template <typename Seq>
@@ -17,10 +17,10 @@ int EditDistanceBlockHashParallel(const Seq &a, const Seq &b,
   int m = b.size();
   if (n == 0) return m;
   if (m == 0) return n;
-  parlay::sequence<parlay::sequence<int>> table_A;
-  parlay::sequence<parlay::sequence<int>> table_B;
-  parlay::sequence<std::pair<int, int>> S_A;
-  parlay::sequence<std::pair<int, int>> S_B;
+  parlay::sequence<parlay::sequence<hash_T>> table_A;
+  parlay::sequence<parlay::sequence<hash_T>> table_B;
+  parlay::sequence<std::pair<hash_T, hash_T>> S_A;
+  parlay::sequence<std::pair<hash_T, hash_T>> S_B;
   construct_table(a, b, table_A, table_B, S_A, S_B, std::min(n, m));
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);

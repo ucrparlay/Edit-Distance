@@ -5,7 +5,7 @@
 using namespace std;
 constexpr int BLOCK_SIZE = 32;
 constexpr int GRANULARITY = 512;
-
+using hash_T = int64_t;
 // auxiliary function for power x^p
 // int mypower(int x, int p) {
 // int res = 1;
@@ -29,22 +29,23 @@ int mypower(int a, int n) {
 
 // build a table
 template <typename T>
-void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
+void build(const T &seq,
+           parlay::sequence<parlay::sequence<hash_T>> &table_seq) {
   size_t k = seq.size() / BLOCK_SIZE;
   // pre-computed power table [p^(BLOCK_SIZE), p^(2 * BLOCK_SIZE), ... p^(logk *
   // BLOCK_SIZE)]
   int LOG2_k = FASTLOG2(k);
   table_seq = parlay::tabulate(LOG2_k + 1, [&](size_t i) {
-    return parlay::sequence<int>::uninitialized(k);
+    return parlay::sequence<hash_T>::uninitialized(k);
   });
   // pre-computed log table [1, 2, 4, ..., logk]
 
   // for the first dim of the table
   parlay::parallel_for(0, k, [&](int j) {
     table_seq[0][j] = 0;
-    int p = 1;
-    int s = j * BLOCK_SIZE;
-    int e = (j + 1) * BLOCK_SIZE;
+    hash_T p = 1;
+    hash_T s = j * BLOCK_SIZE;
+    hash_T e = (j + 1) * BLOCK_SIZE;
     for (int b_j = e - 1; b_j >= s; b_j--) {
       table_seq[0][j] += seq[b_j] * p;
       p *= PRIME_BASE;
@@ -69,11 +70,11 @@ void build(const T &seq, parlay::sequence<parlay::sequence<int>> &table_seq) {
         },
         GRANULARITY);
   }
-  //for (size_t i = 0; i < table_seq.size(); i++) {
-    //printf("table[%zu]: ", i);
-    //for (size_t j = 0; j < table_seq[i].size(); j++) {
-      //printf("%d%c", table_seq[i][j], " \n"[j + 1 == table_seq[i].size()]);
-    //}
+  // for (size_t i = 0; i < table_seq.size(); i++) {
+  // printf("table[%zu]: ", i);
+  // for (size_t j = 0; j < table_seq[i].size(); j++) {
+  // printf("%d%c", table_seq[i][j], " \n"[j + 1 == table_seq[i].size()]);
+  //}
   //}
 }
 
@@ -94,10 +95,10 @@ int qpow(int n) {
 // the length of the initial sequence size.
 template <typename T>
 void construct_table(T &A, T &B,
-                     parlay::sequence<parlay::sequence<int>> &table_A,
-                     parlay::sequence<parlay::sequence<int>> &table_B,
-                     parlay::sequence<std::pair<int, int>> &pre_su_a,
-                     parlay::sequence<std::pair<int, int>> &pre_su_b,
+                     parlay::sequence<parlay::sequence<hash_T>> &table_A,
+                     parlay::sequence<parlay::sequence<hash_T>> &table_B,
+                     parlay::sequence<std::pair<hash_T, hash_T>> &pre_su_a,
+                     parlay::sequence<std::pair<hash_T, hash_T>> &pre_su_b,
                      size_t n) {
   if (A.size() < BLOCK_SIZE || B.size() < BLOCK_SIZE) {
     return;
@@ -129,9 +130,9 @@ void construct_table(T &A, T &B,
   // prefix_b.resize(b_actual_size);
 
   pre_su_a =
-      parlay::sequence<std::pair<int, int>>::uninitialized(a_actual_size);
+      parlay::sequence<std::pair<hash_T, hash_T>>::uninitialized(a_actual_size);
   pre_su_b =
-      parlay::sequence<std::pair<int, int>>::uninitialized(b_actual_size);
+      parlay::sequence<std::pair<hash_T, hash_T>>::uninitialized(b_actual_size);
   // t.next("first");
   //  pre_su_a.resize(a_actual_size);
   //  pre_su_b.resize(b_actual_size);
@@ -169,24 +170,24 @@ void construct_table(T &A, T &B,
       pre_su_b[j].second = pre_su_b[j + 1].second + (B[j] * qpow(e - j - 1));
     }
   });
-  //for (size_t i = 0; i < pre_su_a.size(); i++) {
-    //printf("pre_su_a[%zu]: (%d,%d)\n", i, pre_su_a[i].first,
-           //pre_su_a[i].second);
+  // for (size_t i = 0; i < pre_su_a.size(); i++) {
+  // printf("pre_su_a[%zu]: (%d,%d)\n", i, pre_su_a[i].first,
+  // pre_su_a[i].second);
   //}
-  //for (size_t i = 0; i < pre_su_b.size(); i++) {
-    //printf("pre_su_b[%zu]: (%d,%d)\n", i, pre_su_b[i].first,
-           //pre_su_b[i].second);
+  // for (size_t i = 0; i < pre_su_b.size(); i++) {
+  // printf("pre_su_b[%zu]: (%d,%d)\n", i, pre_su_b[i].first,
+  // pre_su_b[i].second);
   //}
   // t.next("third");
 }
 
 template <typename T>
 bool compare_lcp(int p, int q, int z,
-                 const parlay::sequence<parlay::sequence<int>> &table_A,
-                 const parlay::sequence<parlay::sequence<int>> &table_B,
-                 const parlay::sequence<std::pair<int, int>> &S_A,
-                 const parlay::sequence<std::pair<int, int>> &S_B, const T &A,
-                 const T &B) {
+                 const parlay::sequence<parlay::sequence<hash_T>> &table_A,
+                 const parlay::sequence<parlay::sequence<hash_T>> &table_B,
+                 const parlay::sequence<std::pair<hash_T, hash_T>> &S_A,
+                 const parlay::sequence<std::pair<hash_T, hash_T>> &S_B,
+                 const T &A, const T &B) {
   // size_t t = S_A.size() / table_A[0].size(); // BLOCK_SIZE
   constexpr int t = BLOCK_SIZE;
   if (t == 0) {
@@ -216,15 +217,15 @@ bool compare_lcp(int p, int q, int z,
   // // assert(head_A == rest_A_size);
   // // assert(head_B == rest_B_size);
 
-  int hash_a_v;
-  int hash_b_v;
+  hash_T hash_a_v;
+  hash_T hash_b_v;
 
   if (p % t == 0) {
     hash_a_v = table_A[z][p / t] * qpow(t) + table_A[0][p / t + (1 << z)];
   } else {
-    //printf("%d %d %d\n", S_A[p].second * qpow((1 << z) * t + (t - rest_A_size)),
-           //(table_A[next_block_A][z]) * qpow(t - rest_A_size),
-           //S_A[p + (1 << z) * t + t - 1].first);
+    // printf("%d %d %d\n", S_A[p].second * qpow((1 << z) * t + (t -
+    // rest_A_size)), (table_A[next_block_A][z]) * qpow(t - rest_A_size), S_A[p
+    // + (1 << z) * t + t - 1].first);
     hash_a_v = S_A[p].second * qpow((1 << z) * t + (t - rest_A_size)) +
                (table_A[z][next_block_A]) * qpow(t - rest_A_size) +
                S_A[p + (1 << z) * t + t - 1].first;
@@ -233,15 +234,15 @@ bool compare_lcp(int p, int q, int z,
   if (q % t == 0) {
     hash_b_v = table_B[z][q / t] * qpow(t) + table_B[0][q / t + (1 << z)];
   } else {
-    //printf("%d %d %d\n", S_B[q].second * qpow((1 << z) * t + (t - rest_B_size)),
-           //(table_B[next_block_B][z]) * qpow(t - rest_B_size),
-           //S_B[q + (1 << z) * t + t - 1].first);
+    // printf("%d %d %d\n", S_B[q].second * qpow((1 << z) * t + (t -
+    // rest_B_size)), (table_B[next_block_B][z]) * qpow(t - rest_B_size), S_B[q
+    // + (1 << z) * t + t - 1].first);
     hash_b_v = S_B[q].second * qpow((1 << z) * t + (t - rest_B_size)) +
                (table_B[z][next_block_B]) * qpow(t - rest_B_size) +
                S_B[q + (1 << z) * t + t - 1].first;
   }
-  //printf("z: %d, p: %d, q: %d, hash_a_v: %d, hash_b_v: %d\n", z, p, q, hash_a_v,
-         //hash_b_v);
+  // printf("z: %d, p: %d, q: %d, hash_a_v: %d, hash_b_v: %d\n", z, p, q,
+  // hash_a_v, hash_b_v);
   if (hash_a_v == hash_b_v) return true;
   return false;
 }
@@ -249,10 +250,10 @@ bool compare_lcp(int p, int q, int z,
 // function for query the lcp from A[p] and B[q]
 template <typename T>
 int block_query_lcp(int p, int q, const T &A, const T &B,
-                    const parlay::sequence<parlay::sequence<int>> &table_A,
-                    const parlay::sequence<parlay::sequence<int>> &table_B,
-                    const parlay::sequence<std::pair<int, int>> &S_A,
-                    const parlay::sequence<std::pair<int, int>> &S_B) {
+                    const parlay::sequence<parlay::sequence<hash_T>> &table_A,
+                    const parlay::sequence<parlay::sequence<hash_T>> &table_B,
+                    const parlay::sequence<std::pair<hash_T, hash_T>> &S_A,
+                    const parlay::sequence<std::pair<hash_T, hash_T>> &S_B) {
   constexpr int t = BLOCK_SIZE;
   if (A.size() < t || B.size() < t) {
     int pp = p;
@@ -305,7 +306,7 @@ int block_query_lcp(int p, int q, const T &A, const T &B,
 
   int cnt = 0;
   while (pp < (int)(A.size()) && qq < (int)(B.size()) &&
-         (int(A[pp]) == int(B[qq]))) {
+         (hash_T(A[pp]) == hash_T(B[qq]))) {
     cnt++;
     pp++;
     qq++;

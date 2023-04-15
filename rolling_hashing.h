@@ -6,6 +6,8 @@
 
 using namespace parlay;
 // static constexpr int PRIME = 479;
+using hash_r_T = int32_t;
+
 
 uint32_t q_power(uint32_t base, size_t n) {
   uint32_t ret = 1;
@@ -66,8 +68,8 @@ void s_inplace_scan_inclusive(Seq &A, size_t n) {
 
 template <typename Seq>
 void build_rolling(const Seq &s1, const Seq &s2,
-                   parlay::sequence<uint32_t> &table_s1,
-                   parlay::sequence<uint32_t> &table_s2) {
+                   parlay::sequence<hash_r_T> &table_s1,
+                   parlay::sequence<hash_r_T> &table_s2) {
   size_t table1_size = s1.size();
   size_t table2_size = s2.size();
   table_s1.resize(table1_size);
@@ -86,22 +88,22 @@ void build_rolling(const Seq &s1, const Seq &s2,
 }
 
 // query hash value from i to j
-uint32_t get_hash(const parlay::sequence<uint32_t> &hash_table, size_t i,
+hash_r_T get_hash(const parlay::sequence<hash_r_T> &hash_table, size_t i,
                   size_t j) {
-  uint32_t value_s = hash_table[i - 1];
-  uint32_t value_t = hash_table[j];
-  uint32_t pw_diff = q_power(PRIME, j - i + 1);
-  uint32_t res = value_t - value_s * pw_diff;
+  hash_r_T value_s = hash_table[i - 1];
+  hash_r_T value_t = hash_table[j];
+  hash_r_T pw_diff = q_power(PRIME, j - i + 1);
+  hash_r_T res = value_t - value_s * pw_diff;
   return res;
 }
 
 template <typename T>
 int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
-                  const parlay::sequence<uint32_t> &table1,
-                  const parlay::sequence<uint32_t> &table2, size_t i,
+                  const parlay::sequence<hash_r_T> &table1,
+                  const parlay::sequence<hash_r_T> &table2, size_t i,
                   size_t j) {
   if ((uint32_t)i >= s1.size() || (uint32_t)j >= s2.size()) return 0;
-  if ((uint32_t)s1[i] != (uint32_t)s2[j]) return 0;
+  if ((hash_r_T)s1[i] != (hash_r_T)s2[j]) return 0;
   uint32_t try_r = 1;
   uint32_t r = std::min(s1.size() - i, s2.size() - j);
   uint32_t l = 0;

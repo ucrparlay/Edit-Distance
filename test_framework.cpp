@@ -12,6 +12,7 @@
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
+#include "edit_distance_rolling_blk.h"
 #include "edit_distance_rolling_hashing.h"
 #include "minimum_edit_distance.h"
 #include "range_min.h"
@@ -75,6 +76,9 @@ std::string test_name(int id) {
     case 8:
       return "BFS-Rolling";
       break;
+    case 9:
+      return "BFS-B-Rolling";
+      break;
     default:
       abort();
   }
@@ -117,6 +121,9 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         break;
       case 8:
         num_edits = EditDistanceRollingHash(A, B, &b_time);
+        break;
+      case 9:
+        num_edits = EditDistanceRollingBlkHash(A, B, &b_time);
         break;
       default:
         assert(0);

@@ -29,6 +29,8 @@ int EditDistanceHashParallel(const Seq &a, const Seq &b, double *building_tm) {
 
   *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_lcp(a, b, table_s1, table_s2, logN1, 0, 0);
+  cout << "hashing: " << query_lcp(a, b, table_s1, table_s2, logN1, 1000, 1000)
+       << endl;
   // bfs for path
   int k = 0;
   for (;;) {

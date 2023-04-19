@@ -52,8 +52,8 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
 
   *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_rolling(a, b, table_s1, table_s2, 0, 0);
-  std::cout << "rolling lcp: "
-            << query_rolling(a, b, table_s1, table_s2, 1000, 1000) << std::endl;
+  // std::cout << "rolling lcp: "
+  //           << query_rolling(a, b, table_s1, table_s2, 1000, 1000) << std::endl;
 
   // assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b,
   // 0, 0)); bfs for path

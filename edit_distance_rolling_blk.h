@@ -23,14 +23,14 @@ int EditDistanceRollingBlkHash(const Seq &a, const Seq &b,
   parlay::sequence<hash_r_b_T> table_s2;
 
   build_rolling_blk(a, b, table_s1, table_s2);
-
+  // cout << "construction finished" << endl;
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
   *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_rolling_blk(a, b, table_s1, table_s2, 0, 0);
-  std::cout << "Block rolling lcp: "
-            << query_rolling_blk(a, b, table_s1, table_s2, 1000, 1000)
-            << std::endl;
+  // std::cout << "Block rolling lcp: "
+  //           << query_rolling_blk(a, b, table_s1, table_s2, 1000, 1000)
+  //           << std::endl;
   // assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b, 0,
   // 0)); bfs for path
   int k = 0;

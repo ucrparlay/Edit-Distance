@@ -12,6 +12,8 @@
 #include "edit_distance_dp.h"
 #include "edit_distance_hashing.h"
 #include "edit_distance_parallel.h"
+#include "edit_distance_rolling_blk.h"
+#include "edit_distance_rolling_hashing.h"
 #include "minimum_edit_distance.h"
 
 constexpr size_t NUM_TESTS = 4;
@@ -91,6 +93,15 @@ std::string test_name(int id) {
     case 6:
       return "ParlayLib";
       break;
+    case 7:
+      return "BFS-SA-DC3";
+      break;
+    case 8:
+      return "BFS-Rolling";
+      break;
+    case 9:
+      return "BFS-B-Rolling";
+      break;
     default:
       abort();
   }
@@ -127,6 +138,23 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         break;
       case 6:
         num_edits = minimum_edit_distance(A, B);
+        break;
+      case 7:
+        num_edits = EditDistanceSA(A, B, &b_time, true);
+        break;
+      case 8:
+        num_edits = EditDistanceRollingHash(A, B, &b_time);
+        break;
+      case 9:
+        // std::cout << "Seq A: " << endl;
+        // for (int i = 0; i < 100; i++) {
+        //   std::cout << A[i] << " ";
+        // }
+        // std::cout << std::endl << "Seq B: " << std::endl;
+        // for (int i = 0; i < 100; i++) {
+        //   std::cout << B[i] << " ";
+        // }
+        num_edits = EditDistanceRollingBlkHash(A, B, &b_time);
         break;
       default:
         assert(0);
@@ -207,8 +235,8 @@ int main(int argc, char *argv[]) {
   parlay::sequence<Type> A, B;
   parse_text_file_with_blank(path_1, A);
   parse_text_file_with_blank(path_2, B);
-  printf("size A: %d\n", (int) A.size());
-  printf("size B: %d\n", (int) B.size());
+  printf("size A: %d\n", (int)A.size());
+  printf("size B: %d\n", (int)B.size());
   run_all(A, B, id);
 
   return 0;

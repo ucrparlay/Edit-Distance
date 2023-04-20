@@ -6,7 +6,7 @@
 
 using namespace parlay;
 using hash_r_b_T = uint64_t;
-size_t compression_ratio = 4;
+size_t compression_ratio = 2;
 
 hash_r_b_T q_power_blk(hash_r_b_T base, size_t n) {
   hash_r_b_T ret = 1;
@@ -76,9 +76,6 @@ void build_rolling_blk(const Seq &s1, const Seq &s2,
   // for table_1
   // reload index
 
-  // cout << "table 1 size: " << table1_size << endl;
-  // cout << "table 2 size: " << table2_size << endl;
-
   parlay::parallel_for(0, table1_size, [&](uint32_t i) {
     hash_r_b_T res = (hash_r_b_T)(s1[i * compression_ratio]);
     // assert(res <= 256 && res >= 0);
@@ -110,9 +107,6 @@ hash_r_b_T point_hash_blk(const Seq &s,
                           size_t i) {
   // size_t compression_ratio = sizeof(hash_r_b_T) / sizeof(char);
 
-  // if ((i + 1) % compression_ratio == 0) {
-  //   return b_hash_table[i / compression_ratio];
-  // } else {
   if (i < compression_ratio) {
     size_t num_remain = i + 1;
     hash_r_b_T value_blk = 0;
@@ -123,10 +117,8 @@ hash_r_b_T point_hash_blk(const Seq &s,
     return value_blk;
   } else {
     size_t pos = (size_t)(i / compression_ratio - 1);
-    // cout << "i: " << i << " ratio: " << compression_ratio << endl;
     size_t num_remain = i - (pos + 1) * compression_ratio + 1;
-    // cout << "pos: " << pos << " size: " << b_hash_table.size() << endl;
-    // assert(pos < b_hash_table.size());
+
     hash_r_b_T value_blk = b_hash_table[pos];
     for (size_t r = 0; r < num_remain; r++) {
       assert((pos + 1) * compression_ratio + r < s.size());
@@ -174,8 +166,6 @@ int query_rolling_blk(const parlay::sequence<T> &s1,
   }
 
   r = std::min(try_r, r);
-  // std::cout << "l: " << l << " "
-  //           << "r: " << r << std::endl;
   size_t res = 0;
   while (l <= r) {
     size_t m = l + (r - l) / 2;
@@ -187,7 +177,7 @@ int query_rolling_blk(const parlay::sequence<T> &s1,
       r = m - 1;
     }
   }
-  // std::cout << "res: " << res << std::endl;
+
   return res;
 }
 

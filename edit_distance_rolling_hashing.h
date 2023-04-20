@@ -21,42 +21,13 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
   }
   parlay::sequence<hash_r_T> table_s1;
   parlay::sequence<hash_r_T> table_s2;
-  // cout << "seq" << endl;
-  // for (int i = 0; i < 20; i++) {
-  //   cout << a[i] << " ";
-  // }
-  // cout << endl;
   build_rolling(a, b, table_s1, table_s2);
-  // cout << "rolling table 1: " << endl;
-  // for (int i = 1; i < 50; i++) {
-  //   // hash_r_T res = table_s1[i * 4];
-  //   // for (int j = i * 4 + 1; j < (i + 1) * 4; j++) {
-  //   //   res = res * PRIME + table_s1[j];
-  //   // }
-  //   cout << table_s1[i * 4 - 1] << " ";
-  // }
-  // cout << endl;
-  // cout << "rolling table 2: " << endl;
-  // for (int i = 1; i < 50; i++) {
-  //   // hash_r_T res = table_s2[i * 4];
-  //   // for (int j = i * 4 + 1; j < (i + 1) * 4; j++) {
-  //   //   res = res * PRIME + table_s2[j];
-  //   // }
-  //   // cout << res << " ";
-  //   cout << table_s2[i * 4 - 1] << " ";
-  // }
-  // cout << endl;
 
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 
   *building_tm = tmr.elapsed();
   max_row[Diag(0, 0)] = query_rolling(a, b, table_s1, table_s2, 0, 0);
-  // std::cout << "rolling lcp: "
-  //           << query_rolling(a, b, table_s1, table_s2, 1000, 1000) << std::endl;
-
-  // assert(query_rolling(a, b, table_s1, table_s2, 0, 0) == test_lcp(a, b,
-  // 0, 0)); bfs for path
   int k = 0;
   for (;;) {
     if (max_row[Diag(n, m)] == n) break;  // find path

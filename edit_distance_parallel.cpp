@@ -31,7 +31,6 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
   }
   auto rmq = range_min(lcp);
   auto GetLcp = [&](int i, int j) -> int {
-    // std::cout << "GetLcp " << i << ' ' << j << '\n';
     if (i == n || j == m) return 0;
     assert(0 <= i && i < n && 0 <= j && j < m);
     for (int k = 0; k < 8; k++) {
@@ -92,9 +91,6 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
     });
     parlay::parallel_for(l, r + 1,
                          [&](int id) { max_row[id] = std::min(temp[id], id); });
-    // std::cout << "k: " << k << ", ";
-    // for (int i = 0; i < n + m + 1; i++) std::cout << max_row[i] << ' ';
-    // std::cout << std::endl;
   }
   return k;
 }

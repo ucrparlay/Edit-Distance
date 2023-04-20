@@ -41,9 +41,6 @@ void s_inplace_scan_inclusive(Seq &A, size_t n) {
     hash_r_T p_sum[num_blocks];
 
     parlay::parallel_for(0, num_blocks, [&](size_t i) {
-      // aux[i] = inplace_seq_scan_exclusive_direct(
-      //     A, l + i * block_size, std::min(l + i * block_size + block_size,
-      //     r));
       for (size_t j = i * block_size + 1; j < std::min((i + 1) * block_size, n);
            j++) {
         A[j] += A[j - 1] * PRIME;
@@ -118,8 +115,7 @@ int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
   }
 
   r = std::min(try_r, r);
-  // std::cout << "l: " << l << " "
-  //           << "r: " << r << std::endl;
+
   uint32_t res = 0;
   while (l <= r) {
     uint32_t m = l + (r - l) / 2;
@@ -130,7 +126,6 @@ int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
       r = m - 1;
     }
   }
-  // std::cout << "res: " << res << std::endl;
   return res;
 }
 

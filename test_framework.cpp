@@ -25,9 +25,11 @@ template <typename T>
 auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
   printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k, alpha);
   parlay::sequence<T> A(n), B(n);
+  // parlay::parallel_for(0, n, [&](size_t i) {
+  //   A[i] = B[i] = (parlay::hash32(i + seed) % 100 < 99) ? 0 : 1;
+  // });
   parlay::parallel_for(
       0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha; });
-
   // substitions, insertions, and deletions and roughly equally distributed
   size_t _k = k / 3;
 
@@ -123,6 +125,14 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         num_edits = EditDistanceRollingHash(A, B, &b_time);
         break;
       case 9:
+        // std::cout << "Seq A: " << endl;
+        // for (int i = 0; i < 100; i++) {
+        //   std::cout << A[i] << " ";
+        // }
+        // std::cout << std::endl << "Seq B: " << std::endl;
+        // for (int i = 0; i < 100; i++) {
+        //   std::cout << B[i] << " ";
+        // }
         num_edits = EditDistanceRollingBlkHash(A, B, &b_time);
         break;
       default:

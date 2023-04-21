@@ -71,27 +71,32 @@ constexpr uint32_t PRIME = 479;
 //   }
 // }
 
+template<typename T>
+std::vector<T> get_unique_elems(const std::vector<T>& v) {
+    std::vector<T> unique_elems;
+    std::unordered_set<T> seen_elems;
+    for (const auto& elem : v) {
+        if (seen_elems.count(elem) == 0) {
+            seen_elems.insert(elem);
+            unique_elems.push_back(elem);
+        }
+    }
+    return unique_elems;
+}
+
 // Function for mapping chars to bit-wise indices
 template <typename T>
-parlay::sequence<int> map_to_indices(const parlay::sequence<T>& vec) {
-  parlay::sequence<int> indices;
-  std::unordered_map<T, int> index_map;
-  int next_index = 0;
-
-  for (const T& element : vec) {
-    auto it = index_map.find(element);
-    if (it == index_map.end()) {
-      // element not found in map
-      index_map[element] = next_index;
-      indices.push_back(next_index);
-      next_index++;
-    } else {
-      // element found in map
-      indices.push_back(it->second);
+parlay::sequence<int> map_to_indices(const std::vector<T>& vec) {
+    parlay::sequence<int> indices(vec.size());
+    std::vector<T> unique_elems = get_unique_elems(vec);
+    std::unordered_map<T, int> elem_to_index;
+    for (int i = 0; i < unique_elems.size(); i++) {
+        elem_to_index[unique_elems[i]] = i;
     }
-  }
-
-  return indices;
+    for (int i = 0; i < vec.size(); i++) {
+        indices[i] = elem_to_index[vec[i]];
+    }
+    return indices;
 }
 
 

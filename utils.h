@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "parlay/internal/get_time.h"
@@ -69,6 +70,30 @@ constexpr uint32_t PRIME = 479;
 //     });
 //   }
 // }
+
+// Function for mapping chars to bit-wise indices
+template <typename T>
+parlay::sequence<int> map_to_indices(const parlay::sequence<T>& vec) {
+  parlay::sequence<int> indices;
+  std::unordered_map<T, int> index_map;
+  int next_index = 0;
+
+  for (const T& element : vec) {
+    auto it = index_map.find(element);
+    if (it == index_map.end()) {
+      // element not found in map
+      index_map[element] = next_index;
+      indices.push_back(next_index);
+      next_index++;
+    } else {
+      // element found in map
+      indices.push_back(it->second);
+    }
+  }
+
+  return indices;
+}
+
 
 // Function to parse a file with single-line string to
 // parlay sequence.

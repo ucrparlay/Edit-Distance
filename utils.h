@@ -8,8 +8,11 @@
 #ifndef utils_h
 #define utils_h
 
+#include <malloc.h>
 #include <math.h>
 #include <stdint.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 #include <chrono>
 #include <cstdint>
@@ -71,34 +74,33 @@ constexpr uint32_t PRIME = 479;
 //   }
 // }
 
-template<typename T>
+template <typename T>
 std::vector<T> get_unique_elems(const std::vector<T>& v) {
-    std::vector<T> unique_elems;
-    std::unordered_set<T> seen_elems;
-    for (const auto& elem : v) {
-        if (seen_elems.count(elem) == 0) {
-            seen_elems.insert(elem);
-            unique_elems.push_back(elem);
-        }
+  std::vector<T> unique_elems;
+  std::unordered_set<T> seen_elems;
+  for (const auto& elem : v) {
+    if (seen_elems.count(elem) == 0) {
+      seen_elems.insert(elem);
+      unique_elems.push_back(elem);
     }
-    return unique_elems;
+  }
+  return unique_elems;
 }
 
 // Function for mapping chars to bit-wise indices
 template <typename T>
 parlay::sequence<int> map_to_indices(const std::vector<T>& vec) {
-    parlay::sequence<int> indices(vec.size());
-    std::vector<T> unique_elems = get_unique_elems(vec);
-    std::unordered_map<T, int> elem_to_index;
-    for (int i = 0; i < unique_elems.size(); i++) {
-        elem_to_index[unique_elems[i]] = i;
-    }
-    for (int i = 0; i < vec.size(); i++) {
-        indices[i] = elem_to_index[vec[i]];
-    }
-    return indices;
+  parlay::sequence<int> indices(vec.size());
+  std::vector<T> unique_elems = get_unique_elems(vec);
+  std::unordered_map<T, int> elem_to_index;
+  for (int i = 0; i < unique_elems.size(); i++) {
+    elem_to_index[unique_elems[i]] = i;
+  }
+  for (int i = 0; i < vec.size(); i++) {
+    indices[i] = elem_to_index[vec[i]];
+  }
+  return indices;
 }
-
 
 // Function to parse a file with single-line string to
 // parlay sequence.
@@ -128,7 +130,8 @@ void parse_text_file_with_blank(const std::string filename,
   char ch;
   std::fstream fin(filename, std::fstream::in);
   while (fin >> std::noskipws >> ch) {
-    parser_var.push_back((uint32_t)(ch));
+    unsigned char valid_ch = (unsigned char)(ch);
+    parser_var.push_back((uint32_t)valid_ch);
   }
 }
 
@@ -147,4 +150,17 @@ class Timer {
  private:
   timespec beg_, end_;
 };
+
+// // /**
+// //  * Returns the peak (maximum so far) resident set size (physical
+// //  * memory use) measured in bytes, or zero if the value cannot be
+// //  * determined on this OS.
+// //  */
+// size_t getPeakRSS() {
+//   /* BSD, Linux, and OSX -------------------------------------- */
+//   struct rusage rusage;
+//   getrusage(RUSAGE_SELF, &rusage);
+//   return (size_t)(rusage.ru_maxrss * 1024L);
+// }
+
 #endif /* utils_h */

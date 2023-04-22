@@ -124,14 +124,13 @@ void parse_string_line(const std::string file_name,
 // parlay::sequence variable, blank lines and
 // white spaces will be omitted
 // Usage: `parse_text_file_with_blank(file_path, destination_variables)`
-template <typename T>
 void parse_text_file_with_blank(const std::string filename,
-                                parlay::sequence<T>& parser_var) {
+                                parlay::sequence<unsigned char>& parser_var) {
   char ch;
   std::fstream fin(filename, std::fstream::in);
   while (fin >> std::noskipws >> ch) {
     unsigned char valid_ch = (unsigned char)(ch);
-    parser_var.push_back((uint32_t)valid_ch);
+    parser_var.push_back((unsigned char)valid_ch);
   }
 }
 

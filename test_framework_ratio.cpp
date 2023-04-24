@@ -40,7 +40,7 @@ auto generate_strings(size_t n, size_t k, size_t ratio, size_t seed = 0) {
   // substitutions
   parlay::parallel_for(0, _k, [&](size_t i) {
     size_t idx = parlay::hash32(i + seed) % n;
-    B[idx] = parlay::hash32(i + n + seed) % alpha;
+    B[idx] = (parlay::hash32(i + n + seed) % 10000 < ratio) ? 0 : 1;
   });
 
   // insertions and deletions

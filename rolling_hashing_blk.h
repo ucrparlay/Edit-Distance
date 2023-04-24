@@ -159,7 +159,7 @@ int query_rolling_blk(const parlay::sequence<T> &s1,
   size_t try_r = 1;
   size_t r = std::min(s1.size() - i, s2.size() - j);
   size_t l = 0;
-  while (try_r <= r && get_inter_hash_blk(s1, table1, i, i + try_r) ==
+  while (try_r < r && get_inter_hash_blk(s1, table1, i, i + try_r) ==
                            get_inter_hash_blk(s2, table2, j, j + try_r)) {
     l = try_r;
     try_r *= 2;

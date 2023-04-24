@@ -6,9 +6,9 @@
 
 using namespace parlay;
 // static constexpr int PRIME = 479;
-using hash_r_T = int32_t;
+using hash_r_T = uint64_t;
 
-hash_r_T q_power(uint32_t base, size_t n) {
+hash_r_T q_power(hash_r_T base, size_t n) {
   hash_r_T ret = 1;
   hash_r_T a = base;
   while (n) {

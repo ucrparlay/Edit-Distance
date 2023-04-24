@@ -3,6 +3,8 @@
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 #include <parlay/utilities.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 #include <fstream>
 
@@ -29,7 +31,8 @@ auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
   //   A[i] = B[i] = (parlay::hash32(i + seed) % 100 < 99) ? 0 : 1;
   // });
   parlay::parallel_for(
-      0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha; });
+      0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha;
+      });
   // substitions, insertions, and deletions and roughly equally distributed
   size_t _k = k / 3;
 
@@ -125,14 +128,6 @@ double test(const parlay::sequence<T> &A, const parlay::sequence<T> &B,
         num_edits = EditDistanceRollingHash(A, B, &b_time);
         break;
       case 9:
-        // std::cout << "Seq A: " << endl;
-        // for (int i = 0; i < 100; i++) {
-        //   std::cout << A[i] << " ";
-        // }
-        // std::cout << std::endl << "Seq B: " << std::endl;
-        // for (int i = 0; i < 100; i++) {
-        //   std::cout << B[i] << " ";
-        // }
         num_edits = EditDistanceRollingBlkHash(A, B, &b_time);
         break;
       default:
@@ -206,9 +201,26 @@ int main(int argc, char *argv[]) {
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
   std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-  run_all(A, B, id);
+  cout << "seq: ";
+  for (int i = 0; i < 200; i++) {
+    cout << A[i] << " " << B[i] << " ";
+  }
+  cout << endl;
 
-  // for (size_t i = 1; i <= 3000; i++) {
+  // size_t mem_usage = 0;
+  // struct rusage usage;
+  // getrusage(RUSAGE_SELF, &usage);
+  // mem_usage = usage.ru_maxrss;
+  // std::cout << "Memory usage before allocation: " << (mem_usage >> 20) <<
+  // std::endl;
+
+  run_all(A, B, id);
+  /* BSD, Linux, and OSX -------------------------------------- */
+  // struct rusage prusage;
+  // getrusage(RUSAGE_SELF, &prusage);
+  // return (size_t)(prusage.ru_maxrss * 1024L);
+  // cout << "peak mem usage: " << (prusage.ru_maxrss * 1024L >> 30) <<
+  // std::endl; get memory usage info for (size_t i = 1; i <= 3000; i++) {
   //   for (size_t j = 3 * i; j >= 1; j -= 3) {
   //     printf("i: %zu, j: %zu\n", i, j);
   //     parlay::sequence<Type> A, B;

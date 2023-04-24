@@ -6,7 +6,7 @@
 
 using namespace parlay;
 using hash_r_b_T = uint64_t;
-size_t compression_ratio = 2;
+size_t compression_ratio = 32;
 
 hash_r_b_T q_power_blk(hash_r_b_T base, size_t n) {
   hash_r_b_T ret = 1;

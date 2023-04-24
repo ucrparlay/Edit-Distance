@@ -156,11 +156,15 @@ int query_rolling_blk(const parlay::sequence<T> &s1,
                       size_t j) {
   if ((size_t)i >= s1.size() || (size_t)j >= s2.size()) return 0;
   if ((hash_r_b_T)s1[i] != (hash_r_b_T)s2[j]) return 0;
+  if ((hash_r_b_T)s1[i + 1] != (hash_r_b_T)s2[j + 1]) return 1;
+  if ((hash_r_b_T)s1[i + 2] != (hash_r_b_T)s2[j + 2]) return 2;
+  if ((hash_r_b_T)s1[i + 3] != (hash_r_b_T)s2[j + 3]) return 3;
+
   size_t try_r = 1;
   size_t r = std::min(s1.size() - i, s2.size() - j);
   size_t l = 0;
   while (try_r < r && get_inter_hash_blk(s1, table1, i, i + try_r) ==
-                           get_inter_hash_blk(s2, table2, j, j + try_r)) {
+                          get_inter_hash_blk(s2, table2, j, j + try_r)) {
     l = try_r;
     try_r *= 2;
   }
@@ -177,7 +181,6 @@ int query_rolling_blk(const parlay::sequence<T> &s1,
       r = m - 1;
     }
   }
-
   return res;
 }
 

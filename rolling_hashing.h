@@ -105,6 +105,9 @@ int query_rolling(const parlay::sequence<T> &s1, const parlay::sequence<T> &s2,
                   size_t j) {
   if ((uint32_t)i >= s1.size() || (uint32_t)j >= s2.size()) return 0;
   if ((hash_r_T)s1[i] != (hash_r_T)s2[j]) return 0;
+  if ((hash_r_T)s1[i + 1] != (hash_r_T)s2[j + 1]) return 1;
+  if ((hash_r_T)s1[i + 2] != (hash_r_T)s2[j + 2]) return 2;
+  if ((hash_r_T)s1[i + 3] != (hash_r_T)s2[j + 3]) return 3;
   uint32_t try_r = 1;
   uint32_t r = std::min(s1.size() - i, s2.size() - j);
   uint32_t l = 0;

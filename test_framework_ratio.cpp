@@ -28,7 +28,8 @@ size_t num_rounds = 3;
 template <typename T>
 auto generate_strings(size_t n, size_t k, size_t ratio, size_t seed = 0) {
   size_t alpha = 2;
-  printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k, alpha);
+  printf("Generating test case... (n: %zu, k: %zu, alpha: %zu, ratio: %zu)\n",
+         n, k, alpha, ratio);
   parlay::sequence<T> A(n), B(n);
   parlay::parallel_for(0, n, [&](size_t i) {
     A[i] = B[i] = (parlay::hash32(i + seed) % 10000 < ratio) ? 0 : 1;

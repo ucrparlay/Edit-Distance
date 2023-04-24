@@ -17,6 +17,8 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
                       const parlay::sequence<uint32_t>& b, double* building_tm,
                       bool use_DC3) {
   Timer tmr;
+  uint64_t l_total = 0;
+  uint64_t cnt = 0;
   int n = a.size(), m = b.size();
   auto c = parlay::sequence<uint32_t>(n + m);
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
@@ -51,7 +53,8 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
 
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
   max_row[Diag(0, 0)] = GetLcp(0, 0);
-
+  l_total += GetLcp(0, 0);
+  cnt++;
   int k = 0;
   for (;;) {
     if (max_row[Diag(n, m)] == n) break;  // find path
@@ -65,7 +68,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         if (i == n || j == m) {
           t = i;
         } else {
-          t = i + 1 + GetLcp(i + 1, j + 1);
+          int _lcp = GetLcp(i + 1, j + 1);
+          t = i + 1 + _lcp;
+          l_total += _lcp;
+          cnt++;
         }
       }
       if (id > 0 && max_row[id - 1] != -1) {
@@ -74,7 +80,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         if (i == n) {
           t = n;
         } else {
-          t = std::max(t, i + 1 + GetLcp(i + 1, j));
+          int _lcp_2 = GetLcp(i + 1, j);
+          t = std::max(t, i + 1 + _lcp_2);
+          l_total += _lcp_2;
+          cnt++;
         }
       }
       if (id < n + m && max_row[id + 1] != -1) {
@@ -83,7 +92,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         if (j == m) {
           t = std::max(t, i);
         } else {
-          t = std::max(t, i + GetLcp(i, j + 1));
+          int _lcp_3 = GetLcp(i, j + 1);
+          t = std::max(t, i + _lcp_3);
+          l_total += _lcp_3;
+          cnt++;
         }
       }
       assert(t <= n);
@@ -92,5 +104,8 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
     parlay::parallel_for(l, r + 1,
                          [&](int id) { max_row[id] = std::min(temp[id], id); });
   }
+  std::cout << "Lcp total: " << l_total << std::endl;
+  std::cout << "cnt: " << cnt << std::endl;
+  std::cout << "average: " << (double)(l_total) / cnt << std::endl;
   return k;
 }

@@ -23,16 +23,16 @@
 constexpr size_t NUM_TESTS = 4;
 size_t num_rounds = 3;
 
+// ratio version generator
+// The ratio should be $r$, result in $r : 10000$
 template <typename T>
-auto generate_strings(size_t n, size_t k, size_t alpha, size_t seed = 0) {
+auto generate_strings(size_t n, size_t k, size_t ratio, size_t seed = 0) {
+  size_t alpha = 2;
   printf("Generating test case... (n: %zu, k: %zu, alpha: %zu)\n", n, k, alpha);
   parlay::sequence<T> A(n), B(n);
-  // parlay::parallel_for(0, n, [&](size_t i) {
-  //   A[i] = B[i] = (parlay::hash32(i + seed) % 100 < 99) ? 0 : 1;
-  // });
-  parlay::parallel_for(
-      0, n, [&](size_t i) { A[i] = B[i] = parlay::hash32(i + seed) % alpha;
-      });
+  parlay::parallel_for(0, n, [&](size_t i) {
+    A[i] = B[i] = (parlay::hash32(i + seed) % 10000 < ratio) ? 0 : 1;
+  });
   // substitions, insertions, and deletions and roughly equally distributed
   size_t _k = k / 3;
 
@@ -172,14 +172,14 @@ int main(int argc, char *argv[]) {
   int id = -1;
   size_t n = 1000000;
   size_t k = 1000;
-  size_t alpha = n;
+  size_t ratio = 5000;
   if (argc == 1) {
     printf(
         "Usage: ./edit_distance <id> <n> <k> <alpha> <rounds>\n"
         "id: id of the algorithm\n"
         "n: length of strings\n"
         "k: estimated number of edits\n"
-        "alpha: alphabet size\n"
+        "ratio: ratio: (r : 10000)\n"
         "rounds: number of rounds");
     exit(0);
   }
@@ -193,107 +193,16 @@ int main(int argc, char *argv[]) {
     k = atoi(argv[3]);
   }
   if (argc >= 5) {
-    alpha = atoi(argv[4]);
+    ratio = atoi(argv[4]);
   }
   if (argc >= 6) {
     num_rounds = atoi(argv[5]);
   }
   using Type = uint32_t;
   parlay::sequence<Type> A, B;
-  std::tie(A, B) = generate_strings<Type>(n, k, alpha);
-
-  // size_t mem_usage = 0;
-  // struct rusage usage;
-  // getrusage(RUSAGE_SELF, &usage);
-  // mem_usage = usage.ru_maxrss;
-  // std::cout << "Memory usage before allocation: " << (mem_usage >> 20) <<
-  // std::endl;
+  std::tie(A, B) = generate_strings<Type>(n, k, ratio);
 
   run_all(A, B, id);
-  /* BSD, Linux, and OSX -------------------------------------- */
-  // struct rusage prusage;
-  // getrusage(RUSAGE_SELF, &prusage);
-  // return (size_t)(prusage.ru_maxrss * 1024L);
-  // cout << "peak mem usage: " << (prusage.ru_maxrss * 1024L >> 30) <<
-  // std::endl; get memory usage info for (size_t i = 1; i <= 3000; i++) {
-  //   for (size_t j = 3 * i; j >= 1; j -= 3) {
-  //     printf("i: %zu, j: %zu\n", i, j);
-  //     parlay::sequence<Type> A, B;
-  //     std::tie(A, B) = generate_strings<Type>(i, j, 3 * i);
-  //     // printf("A.size(): %zu, B.size(): %zu\n", A.size(), B.size());
-  //     // printf("A: ");
-  //     // for (size_t k = 0; k < A.size(); k++) {
-  //     // printf("%u ", A[k]);
-  //     //}
-  //     // puts("");
-  //     // printf("B: ");
-  //     // for (size_t k = 0; k < B.size(); k++) {
-  //     // printf("%u ", B[k]);
-  //     //}
-  //     // puts("");
-  //     double b_time;
-  //     size_t v1 = EditDistanceHashParallel(A, B, &b_time);
-  //     size_t v2 = EditDistanceRollingHash(A, B, &b_time);
-  //     if (v1 != v2) {
-  //       printf("v1: %zu, v2: %zu\n", v1, v2);
-  //       printf("wrong answer\n");
-  //       return 0;
-  //     }
-  //   }
-  // }
-
-  // parlay::sequence<int> a(1000), b(1000);
-  // for (int i = 0; i < 1000; i++) {
-  //   a[i] = rand() % 1000;
-  //   b[i] = rand() % 1000;
-  // }
-  // auto n = a.size(), m = b.size();
-
-  // auto c = parlay::sequence<uint32_t>(n + m + 1);
-  // parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
-  // parlay::parallel_for(0, m, [&](int i) { c[i + n + 1] = b[i]; });
-  // c[n] = std::numeric_limits<uint32_t>::max();
-  // auto rank = parlay::sequence<unsigned int>();
-  // auto sa = parlay::sequence<unsigned int>();
-  // auto lcp = parlay::sequence<unsigned int>();
-  // std::tie(rank, sa, lcp) = suffix_array_large_alphabet(c);
-  // auto rmq = range_min(lcp);
-  // auto GetLcp = [&](int i, int j) -> int {
-  //   // std::cout << "GetLcp " << i << ' ' << j << '\n';
-  //   if (i == n || j == m) return 0;
-  //   assert(0 <= i && i < n && 0 <= j && j < m);
-  //   for (int k = 0; k < 8; k++) {
-  //     if (i + k >= n || j + k >= m || a[i + k] != b[j + k]) {
-  //       return k;
-  //     }
-  //   }
-  //   int l = rank[i], r = rank[j + n + 1];
-  //   if (l > r) std::swap(l, r);
-  //   assert(l < r);
-  //   int id = rmq.query(l + 1, r);
-  //   return lcp[id];
-  // };
-
-  // parlay::sequence<parlay::sequence<int>> table_A;
-  // parlay::sequence<parlay::sequence<int>> table_B;
-  // parlay::sequence<std::pair<int, int>> S_A;
-  // parlay::sequence<std::pair<int, int>> S_B;
-  // construct_table(a, b, table_A, table_B, S_A, S_B, std::min(n, m));
-  // auto res = block_query_lcp(0, 0, a, b, table_A, table_B, S_A, S_B);
-  // // cout << "res: " << res << endl;
-
-  // for (int i = 0; i < 100; i++) {
-  //   int p = rand() % n;
-  //   int q = rand() % m;
-  //   int res1 = GetLcp(p, q);
-  //   int res2 = block_query_lcp(p, q, a, b, table_A, table_B, S_A, S_B);
-  //   if (res1 != res2) {
-  //     cout << "error: " << p << ' ' << q << endl;
-  //     abort();
-  //   }
-  // }
-
-  // cout << "good" << endl;
 
   return 0;
 }

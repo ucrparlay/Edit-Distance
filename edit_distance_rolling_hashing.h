@@ -1,5 +1,4 @@
 #include "rolling_hashing.h"
-using hash_r_T = int32_t;
 
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel
@@ -21,8 +20,16 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
   }
   parlay::sequence<hash_r_T> table_s1;
   parlay::sequence<hash_r_T> table_s2;
+  // size_t mem_usage = 0;
+  // struct rusage usage;
+  // getrusage(RUSAGE_SELF, &usage);
+  // mem_usage = usage.ru_maxrss;
+  // std::cout << "Memory usage before allocation: " << mem_usage << std::endl;
   build_rolling(a, b, table_s1, table_s2);
 
+  // getrusage(RUSAGE_SELF, &usage);
+  // mem_usage = usage.ru_maxrss;
+  // std::cout << "Memory usage after allocation: " << mem_usage << std::endl;
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 

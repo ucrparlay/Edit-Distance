@@ -1,0 +1,2 @@
+/opt/rh/gcc-toolset-12/root/usr/bin/ar qc libedit_distance_parallel.a CMakeFiles/edit_distance_parallel.dir/edit_distance_parallel.cpp.o
+/opt/rh/gcc-toolset-12/root/usr/bin/ranlib libedit_distance_parallel.a

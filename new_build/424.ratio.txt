@@ -1,0 +1,1165 @@
+n, k, Parlay, HashB, Hash, BHB, BH, SAB, SA, DAC_MM
+
+
+
+
+############################### Synthetic DATA ###############################
+
+
+
+1000000000, 10000, Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 10)
+
+Test name: BFS-SA-DC3
+#edits: 9470
+Warmup round: 86.362144
+Round 1: 85.977665
+Round 2: 86.157242
+Round 3: 86.159449
+Average time: 86.098119
+Average Building time: 84.577352
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 10)
+
+Test name: BFS-Rolling
+#edits: 9470
+Warmup round: 2.461461
+Round 1: 2.218883
+Round 2: 2.243374
+Round 3: 2.227731
+Average time: 2.229996
+Average Building time: 0.748087
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 10)
+
+Test name: BFS-B-Rolling
+#edits: 9470
+Warmup round: 7.101883
+Round 1: 6.900138
+Round 2: 6.932491
+Round 3: 6.936083
+Average time: 6.922904
+Average Building time: 0.197137
+
+1000000000, 10000, Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 100)
+
+Test name: BFS-SA-DC3
+#edits: 9524
+Warmup round: 80.218673
+Round 1: 79.543236
+Round 2: 80.216935
+Round 3: 79.898986
+Average time: 79.886386
+Average Building time: 78.356679
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 100)
+
+Test name: BFS-Rolling
+#edits: 9524
+Warmup round: 1.837593
+Round 1: 1.566168
+Round 2: 1.583882
+Round 3: 1.591958
+Average time: 1.580669
+Average Building time: 0.745064
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 100)
+
+Test name: BFS-B-Rolling
+#edits: 9524
+Warmup round: 4.364319
+Round 1: 4.296987
+Round 2: 4.229293
+Round 3: 4.179173
+Average time: 4.235151
+Average Building time: 0.197222
+
+1000000000, 10000, Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 1000)
+
+Test name: BFS-SA-DC3
+#edits: 9523
+Warmup round: 81.379697
+Round 1: 80.232616
+Round 2: 81.384020
+Round 3: 81.243621
+Average time: 80.953419
+Average Building time: 79.767674
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 1000)
+
+Test name: BFS-Rolling
+#edits: 9523
+Warmup round: 1.612704
+Round 1: 1.355112
+Round 2: 1.361046
+Round 3: 1.367028
+Average time: 1.361062
+Average Building time: 0.746768
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 1000)
+
+Test name: BFS-B-Rolling
+#edits: 9523
+Warmup round: 2.422623
+Round 1: 2.299784
+Round 2: 2.302800
+Round 3: 2.290032
+Average time: 2.297539
+Average Building time: 0.196652
+
+1000000000, 10000, Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 2000)
+
+Test name: BFS-SA-DC3
+#edits: 9484
+Warmup round: 87.652969
+Round 1: 87.043659
+Round 2: 87.409591
+Round 3: 87.450967
+Average time: 87.301406
+Average Building time: 86.282356
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 2000)
+
+Test name: BFS-Rolling
+#edits: 9484
+Warmup round: 1.568991
+Round 1: 1.312083
+Round 2: 1.301882
+Round 3: 1.331545
+Average time: 1.315170
+Average Building time: 0.743764
+Generating test case... (n: 1000000000, k: 10000, alpha: 2, ratio: 2000)
+
+Test name: BFS-B-Rolling
+#edits: 9484
+Warmup round: 2.024543
+Round 1: 1.877067
+Round 2: 1.882344
+Round 3: 1.869282
+Average time: 1.876231
+Average Building time: 0.198443
+
+1000000000, 100000, Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-SA-DC3
+#edits: 87990
+Warmup round: 142.475496
+Round 1: 142.680953
+Round 2: 142.751647
+Round 3: 142.630574
+Average time: 142.687725
+Average Building time: 79.998281
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-Rolling
+#edits: 87990
+Warmup round: 132.441751
+Round 1: 132.685972
+Round 2: 132.528803
+Round 3: 132.569218
+Average time: 132.594664
+Average Building time: 1.754410
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-B-Rolling
+#edits: 87990
+Warmup round: 535.574637
+Round 1: 535.171996
+Round 2: 534.839626
+Round 3: 534.990726
+Average time: 535.000783
+Average Building time: 0.202380
+
+1000000000, 100000, Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-SA-DC3
+#edits: 94110
+Warmup round: 136.682928
+Round 1: 136.541504
+Round 2: 136.871884
+Round 3: 136.751008
+Average time: 136.721465
+Average Building time: 72.103030
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-Rolling
+#edits: 94110
+Warmup round: 66.277518
+Round 1: 66.771395
+Round 2: 66.571635
+Round 3: 67.241429
+Average time: 66.861486
+Average Building time: 1.894365
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-B-Rolling
+#edits: 94110
+Warmup round: 350.358127
+Round 1: 349.826047
+Round 2: 349.732416
+Round 3: 349.183880
+Average time: 349.580781
+Average Building time: 0.206044
+
+1000000000, 100000, Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-SA-DC3
+#edits: 94699
+Warmup round: 102.738858
+Round 1: 101.660246
+Round 2: 101.982268
+Round 3: 102.044475
+Average time: 101.895663
+Average Building time: 72.472060
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-Rolling
+#edits: 94699
+Warmup round: 29.098978
+Round 1: 29.541182
+Round 2: 29.596538
+Round 3: 29.389374
+Average time: 29.509031
+Average Building time: 1.794014
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-B-Rolling
+#edits: 94699
+Warmup round: 166.714494
+Round 1: 167.160594
+Round 2: 166.985347
+Round 3: 167.223325
+Average time: 167.123089
+Average Building time: 0.198068
+
+1000000000, 100000, Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-SA-DC3
+#edits: 94715
+Warmup round: 97.698317
+Round 1: 97.456162
+Round 2: 97.888791
+Round 3: 97.530141
+Average time: 97.625031
+Average Building time: 78.994255
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-Rolling
+#edits: 94715
+Warmup round: 25.394947
+Round 1: 26.141559
+Round 2: 26.152717
+Round 3: 25.799656
+Average time: 26.031311
+Average Building time: 1.858398
+Generating test case... (n: 1000000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-B-Rolling
+#edits: 94715
+Warmup round: 127.202784
+Round 1: 127.029444
+Round 2: 127.138540
+Round 3: 127.317705
+Average time: 127.161896
+Average Building time: 0.208261
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-SA-DC3
+#edits: 26586
+Warmup round: 12.244817
+Round 1: 11.468919
+Round 2: 11.421485
+Round 3: 11.554782
+Average time: 11.481729
+Average Building time: 6.283962
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-Rolling
+#edits: 26586
+Warmup round: 12.817926
+Round 1: 12.821583
+Round 2: 12.843101
+Round 3: 12.822848
+Average time: 12.829177
+Average Building time: 0.148502
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-B-Rolling
+#edits: 26586
+Warmup round: 62.843563
+Round 1: 62.794637
+Round 2: 62.815613
+Round 3: 62.872260
+Average time: 62.827503
+Average Building time: 0.019446
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-SA-DC3
+#edits: 54484
+Warmup round: 29.510499
+Round 1: 28.721688
+Round 2: 28.766199
+Round 3: 28.695867
+Average time: 28.727918
+Average Building time: 6.614339
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-Rolling
+#edits: 54483
+Warmup round: 45.626362
+Round 1: 45.613570
+Round 2: 45.637697
+Round 3: 45.607323
+Average time: 45.619530
+Average Building time: 0.161327
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-B-Rolling
+#edits: 54483
+Warmup round: 197.411769
+Round 1: 197.775021
+Round 2: 197.629630
+Round 3: 197.366311
+Average time: 197.590321
+Average Building time: 0.018886
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-SA-DC3
+#edits: 78674
+Warmup round: 48.225154
+Round 1: 47.455714
+Round 2: 47.606392
+Round 3: 47.496835
+Average time: 47.519647
+Average Building time: 5.838553
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-Rolling
+#edits: 78674
+Warmup round: 44.332511
+Round 1: 44.220452
+Round 2: 44.163072
+Round 3: 44.392177
+Average time: 44.258567
+Average Building time: 0.179126
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-B-Rolling
+#edits: 78673
+Warmup round: 243.244067
+Round 1: 242.877439
+Round 2: 242.827652
+Round 3: 243.446044
+Average time: 243.050378
+Average Building time: 0.018845
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-SA-DC3
+#edits: 83397
+Warmup round: 28.485807
+Round 1: 27.906477
+Round 2: 27.907239
+Round 3: 28.048761
+Average time: 27.954159
+Average Building time: 6.100423
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-Rolling
+#edits: 83395
+Warmup round: 21.888832
+Round 1: 21.866536
+Round 2: 21.705495
+Round 3: 21.750712
+Average time: 21.774248
+Average Building time: 0.146024
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-B-Rolling
+#edits: 83395
+Warmup round: 129.783498
+Round 1: 129.742876
+Round 2: 129.297595
+Round 3: 129.324836
+Average time: 129.455102
+Average Building time: 0.019020
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-SA-DC3
+#edits: 83784
+Warmup round: 20.794392
+Round 1: 20.251610
+Round 2: 20.147253
+Round 3: 20.290137
+Average time: 20.229667
+Average Building time: 6.168596
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-Rolling
+#edits: 83786
+Warmup round: 19.070319
+Round 1: 19.168966
+Round 2: 19.054863
+Round 3: 19.210258
+Average time: 19.144696
+Average Building time: 0.135609
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-B-Rolling
+#edits: 83785
+Warmup round: 99.682999
+Round 1: 99.399537
+Round 2: 99.687905
+Round 3: 99.852696
+Average time: 99.646713
+Average Building time: 0.019057
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 3000)
+
+Test name: BFS-SA-DC3
+#edits: 83894
+Warmup round: 18.540121
+Round 1: 17.888024
+Round 2: 17.944596
+Round 3: 18.023112
+Average time: 17.951911
+Average Building time: 6.207572
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 3000)
+
+Test name: BFS-Rolling
+#edits: 83893
+Warmup round: 18.139614
+Round 1: 18.158629
+Round 2: 18.076286
+Round 3: 18.099236
+Average time: 18.111384
+Average Building time: 0.147059
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 3000)
+
+Test name: BFS-B-Rolling
+#edits: 83894
+Warmup round: 85.890418
+Round 1: 85.748582
+Round 2: 85.973654
+Round 3: 85.978986
+Average time: 85.900407
+Average Building time: 0.019515
+
+100000000, 100000, Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 4000)
+
+Test name: BFS-SA-DC3
+#edits: 84006
+Warmup round: 17.863618
+Round 1: 17.264563
+Round 2: 17.209720
+Round 3: 17.174339
+Average time: 17.216207
+Average Building time: 6.155700
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 4000)
+
+Test name: BFS-Rolling
+#edits: 84007
+Warmup round: 17.639695
+Round 1: 17.585196
+Round 2: 17.594292
+Round 3: 17.705353
+Average time: 17.628280
+Average Building time: 0.169015
+Generating test case... (n: 100000000, k: 100000, alpha: 2, ratio: 4000)
+
+Test name: BFS-B-Rolling
+#edits: 84007
+Warmup round: 79.479230
+Round 1: 79.662607
+Round 2: 79.463566
+Round 3: 79.609630
+Average time: 79.578601
+Average Building time: 0.018191
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-SA-DC3
+#edits: 18215
+Warmup round: 3.006101
+Round 1: 2.454722
+Round 2: 2.448495
+Round 3: 2.439128
+Average time: 2.447448
+Average Building time: 0.495514
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-Rolling
+#edits: 18215
+Warmup round: 3.514255
+Round 1: 3.464219
+Round 2: 3.416845
+Round 3: 3.436840
+Average time: 3.439301
+Average Building time: 0.008439
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-B-Rolling
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 2)
+
+Test name: BFS-SA-DC3
+#edits: 19510
+Warmup round: 3.248439
+Round 1: 2.726913
+Round 2: 2.718725
+Round 3: 2.690137
+Average time: 2.711925
+Average Building time: 0.492736
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 2)
+
+Test name: BFS-Rolling
+#edits: 19507
+Warmup round: 3.980247
+Round 1: 3.919326
+Round 2: 3.960124
+Round 3: 3.956372
+Average time: 3.945274
+Average Building time: 0.008324
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 2)
+
+Test name: BFS-B-Rolling
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-SA-DC3
+#edits: 22461
+Warmup round: 4.068730
+Round 1: 3.525454
+Round 2: 3.508689
+Round 3: 3.494533
+Average time: 3.509559
+Average Building time: 0.512985
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-Rolling
+#edits: 22463
+Warmup round: 5.095533
+Round 1: 5.113290
+Round 2: 5.090186
+Round 3: 5.112523
+Average time: 5.105333
+Average Building time: 0.008390
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-B-Rolling
+#edits: 22462
+Warmup round: 30.283986
+Round 1: 30.358932
+Round 2: 30.370498
+Round 3: 30.420619
+Average time: 30.383350
+Average Building time: 0.002159
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-SA-DC3
+#edits: 26249
+Warmup round: 5.191733
+Round 1: 4.632198
+Round 2: 4.632216
+Round 3: 4.630457
+Average time: 4.631624
+Average Building time: 0.502597
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-Rolling
+#edits: 26251
+Warmup round: 6.843135
+Round 1: 6.738914
+Round 2: 6.720958
+Round 3: 6.735213
+Average time: 6.731695
+Average Building time: 0.008075
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-B-Rolling
+#edits: 26251
+Warmup round: 39.142310
+Round 1: 39.182974
+Round 2: 39.134240
+Round 3: 39.273167
+Average time: 39.196794
+Average Building time: 0.002132
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 20)
+
+Test name: BFS-SA-DC3
+#edits: 32284
+Warmup round: 7.306570
+Round 1: 6.732027
+Round 2: 6.683086
+Round 3: 6.696185
+Average time: 6.703766
+Average Building time: 0.458174
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 20)
+
+Test name: BFS-Rolling
+#edits: 32285
+Warmup round: 9.637922
+Round 1: 9.595398
+Round 2: 9.615530
+Round 3: 9.563076
+Average time: 9.591335
+Average Building time: 0.008215
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 20)
+
+Test name: BFS-B-Rolling
+#edits: 32287
+Warmup round: 54.474862
+Round 1: 54.274858
+Round 2: 54.334596
+Round 3: 54.289514
+Average time: 54.299656
+Average Building time: 0.001936
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 30)
+
+Test name: BFS-SA-DC3
+#edits: 36924
+Warmup round: 9.262583
+Round 1: 8.696609
+Round 2: 8.701378
+Round 3: 8.732468
+Average time: 8.710152
+Average Building time: 0.455084
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 30)
+
+Test name: BFS-Rolling
+#edits: 36924
+Warmup round: 12.020442
+Round 1: 11.945234
+Round 2: 11.868728
+Round 3: 11.902155
+Average time: 11.905372
+Average Building time: 0.008446
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 30)
+
+Test name: BFS-B-Rolling
+#edits: 36928
+Warmup round: 66.821864
+Round 1: 66.794495
+Round 2: 66.825328
+Round 3: 67.010577
+Average time: 66.876800
+Average Building time: 0.001909
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 40)
+
+Test name: BFS-SA-DC3
+#edits: 40651
+Warmup round: 11.037906
+Round 1: 10.390817
+Round 2: 10.362956
+Round 3: 10.352870
+Average time: 10.368881
+Average Building time: 0.443243
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 40)
+
+Test name: BFS-Rolling
+#edits: 40655
+Warmup round: 13.852840
+Round 1: 13.833518
+Round 2: 13.933164
+Round 3: 13.785710
+Average time: 13.850797
+Average Building time: 0.008651
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 40)
+
+Test name: BFS-B-Rolling
+#edits: 40651
+Warmup round: 76.140564
+Round 1: 76.166986
+Round 2: 76.116509
+Round 3: 76.167635
+Average time: 76.150377
+Average Building time: 0.001949
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 50)
+
+Test name: BFS-SA-DC3
+#edits: 43778
+Warmup round: 12.285643
+Round 1: 11.888680
+Round 2: 11.768773
+Round 3: 11.696909
+Average time: 11.784787
+Average Building time: 0.441150
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 50)
+
+Test name: BFS-Rolling
+#edits: 43778
+Warmup round: 15.138095
+Round 1: 15.157256
+Round 2: 15.206753
+Round 3: 15.088062
+Average time: 15.150690
+Average Building time: 0.007692
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 50)
+
+Test name: BFS-B-Rolling
+#edits: 43783
+Warmup round: 84.851143
+Round 1: 84.648121
+Round 2: 84.816214
+Round 3: 84.855903
+Average time: 84.773413
+Average Building time: 0.002159
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 60)
+
+Test name: BFS-SA-DC3
+#edits: 46440
+Warmup round: 13.554314
+Round 1: 13.073287
+Round 2: 13.047516
+Round 3: 13.018162
+Average time: 13.046322
+Average Building time: 0.424950
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 60)
+
+Test name: BFS-Rolling
+#edits: 46442
+Warmup round: 16.293899
+Round 1: 16.119221
+Round 2: 16.315386
+Round 3: 16.204238
+Average time: 16.212948
+Average Building time: 0.008051
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 60)
+
+Test name: BFS-B-Rolling
+#edits: 46444
+Warmup round: 91.668110
+Round 1: 91.659908
+Round 2: 91.816062
+Round 3: 91.103921
+Average time: 91.526630
+Average Building time: 0.001997
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 70)
+
+Test name: BFS-SA-DC3
+#edits: 48845
+Warmup round: 14.672473
+Round 1: 14.088028
+Round 2: 14.008309
+Round 3: 14.011305
+Average time: 14.035881
+Average Building time: 0.403465
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 70)
+
+Test name: BFS-Rolling
+#edits: 48844
+Warmup round: 16.889684
+Round 1: 16.860002
+Round 2: 16.837159
+Round 3: 16.798018
+Average time: 16.831726
+Average Building time: 0.008374
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 70)
+
+Test name: BFS-B-Rolling
+#edits: 48844
+Warmup round: 96.848145
+Round 1: 97.132949
+Round 2: 97.381329
+Round 3: 97.899151
+Average time: 97.471143
+Average Building time: 0.002155
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 80)
+
+Test name: BFS-SA-DC3
+#edits: 50898
+Warmup round: 15.794508
+Round 1: 15.329018
+Round 2: 16.115150
+Round 3: 15.955027
+Average time: 15.799732
+Average Building time: 0.411467
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 80)
+
+Test name: BFS-Rolling
+#edits: 50899
+Warmup round: 18.913563
+Round 1: 18.851608
+Round 2: 18.699737
+Round 3: 18.766283
+Average time: 18.772543
+Average Building time: 0.008141
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 80)
+
+Test name: BFS-B-Rolling
+#edits: 50899
+Warmup round: 105.820973
+Round 1: 104.907906
+Round 2: 106.369008
+Round 3: 108.421836
+Average time: 106.566250
+Average Building time: 0.002121
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 90)
+
+Test name: BFS-SA-DC3
+#edits: 52765
+Warmup round: 17.468887
+Round 1: 16.958774
+Round 2: 16.952718
+Round 3: 17.044629
+Average time: 16.985374
+Average Building time: 0.408242
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 90)
+
+Test name: BFS-Rolling
+#edits: 52764
+Warmup round: 19.298963
+Round 1: 19.169853
+Round 2: 19.258877
+Round 3: 19.181625
+Average time: 19.203452
+Average Building time: 0.008183
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 90)
+
+Test name: BFS-B-Rolling
+#edits: 52765
+Warmup round: 111.775370
+Round 1: 111.870916
+Round 2: 112.280467
+Round 3: 112.680588
+Average time: 112.277324
+Average Building time: 0.002116
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-SA-DC3
+#edits: 54403
+Warmup round: 18.279678
+Round 1: 17.752030
+Round 2: 17.728072
+Round 3: 17.863213
+Average time: 17.781105
+Average Building time: 0.408915
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-Rolling
+#edits: 54401
+Warmup round: 19.772127
+Round 1: 19.792683
+Round 2: 19.730071
+Round 3: 19.798139
+Average time: 19.773631
+Average Building time: 0.007968
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-B-Rolling
+#edits: 54401
+Warmup round: 116.732016
+Round 1: 114.906425
+Round 2: 111.663519
+Round 3: 111.822954
+Average time: 112.797633
+Average Building time: 0.001938
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-SA-DC3
+#edits: 78351
+Warmup round: 17.686821
+Round 1: 17.228674
+Round 2: 17.188590
+Round 3: 17.091460
+Average time: 17.169575
+Average Building time: 0.306473
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-Rolling
+#edits: 78352
+Warmup round: 18.359443
+Round 1: 18.312084
+Round 2: 18.344306
+Round 3: 18.362025
+Average time: 18.339472
+Average Building time: 0.008179
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-B-Rolling
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-SA-DC3
+#edits: 80660
+Warmup round: 12.681863
+Round 1: 12.098450
+Round 2: 12.052121
+Round 3: 12.069913
+Average time: 12.073495
+Average Building time: 0.308983
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-Rolling
+#edits: 80663
+Warmup round: 16.520321
+Round 1: 16.412390
+Round 2: 16.289862
+Round 3: 16.272588
+Average time: 16.324947
+Average Building time: 0.008013
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 2000)
+
+Test name: BFS-B-Rolling
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 3000)
+
+Test name: BFS-SA-DC3
+#edits: 81396
+Warmup round: 11.075052
+Round 1: 10.518683
+Round 2: 10.596830
+Round 3: 10.540236
+Average time: 10.551916
+Average Building time: 0.305475
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 3000)
+
+Test name: BFS-Rolling
+#edits: 81396
+Warmup round: 15.757480
+Round 1: 15.744258
+Round 2: 15.739228
+Round 3: 15.841776
+Average time: 15.775087
+Average Building time: 0.008240
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 3000)
+
+Test name: BFS-B-Rolling
+#edits: 81400
+Warmup round: 77.954103
+Round 1: 78.084123
+Round 2: 78.058152
+Round 3: 77.833831
+Average time: 77.992035
+Average Building time: 0.001954
+
+10000000, 100000, Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 4000)
+
+Test name: BFS-SA-DC3
+#edits: 81745
+Warmup round: 10.356454
+Round 1: 9.857469
+Round 2: 9.749705
+Round 3: 9.808251
+Average time: 9.805142
+Average Building time: 0.309559
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 4000)
+
+Test name: BFS-Rolling
+#edits: 81743
+Warmup round: 15.316965
+Round 1: 15.225888
+Round 2: 15.255338
+Round 3: 15.270508
+Average time: 15.250578
+Average Building time: 0.007835
+Generating test case... (n: 10000000, k: 100000, alpha: 2, ratio: 4000)
+
+Test name: BFS-B-Rolling
+#edits: 81744
+Warmup round: 72.126185
+Round 1: 72.168525
+Round 2: 72.426375
+Round 3: 72.407463
+Average time: 72.334121
+Average Building time: 0.001920
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-SA-DC3
+#edits: 16050
+Warmup round: 1.497104
+Round 1: 1.328154
+Round 2: 1.353742
+Round 3: 1.384470
+Average time: 1.355455
+Average Building time: 0.085430
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-Rolling
+#edits: 16046
+Warmup round: 1.593991
+Round 1: 1.630605
+Round 2: 1.565638
+Round 3: 1.566285
+Average time: 1.587509
+Average Building time: 0.001550
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 3)
+
+Test name: BFS-SA-DC3
+#edits: 16348
+Warmup round: 1.528935
+Round 1: 1.381877
+Round 2: 1.398947
+Round 3: 1.393156
+Average time: 1.391327
+Average Building time: 0.088304
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 3)
+
+Test name: BFS-Rolling
+#edits: 16329
+Warmup round: 1.647608
+Round 1: 1.591132
+Round 2: 1.597260
+Round 3: 1.593615
+Average time: 1.594002
+Average Building time: 0.001551
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 3)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-SA-DC3
+#edits: 16569
+Warmup round: 1.531802
+Round 1: 1.409285
+Round 2: 1.413742
+Round 3: 1.449215
+Average time: 1.424081
+Average Building time: 0.084994
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-Rolling
+#edits: 16566
+Warmup round: 1.639734
+Round 1: 1.600819
+Round 2: 1.616049
+Round 3: 1.639598
+Average time: 1.618822
+Average Building time: 0.001579
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 7)
+
+Test name: BFS-SA-DC3
+#edits: 16774
+Warmup round: 1.585587
+Round 1: 1.422785
+Round 2: 1.451327
+Round 3: 1.459488
+Average time: 1.444533
+Average Building time: 0.084394
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 7)
+
+Test name: BFS-Rolling
+#edits: 16788
+Warmup round: 1.663776
+Round 1: 1.629395
+Round 2: 1.625740
+Round 3: 1.634039
+Average time: 1.629725
+Average Building time: 0.001595
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 7)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 9)
+
+Test name: BFS-SA-DC3
+#edits: 17020
+Warmup round: 1.634292
+Round 1: 1.458701
+Round 2: 1.497430
+Round 3: 1.485255
+Average time: 1.480462
+Average Building time: 0.084630
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 9)
+
+Test name: BFS-Rolling
+#edits: 17019
+Warmup round: 1.698616
+Round 1: 1.671806
+Round 2: 1.662670
+Round 3: 1.669355
+Average time: 1.667944
+Average Building time: 0.001559
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 9)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-SA-DC3
+#edits: 17154
+Warmup round: 1.663398
+Round 1: 1.474752
+Round 2: 1.498325
+Round 3: 1.496983
+Average time: 1.490020
+Average Building time: 0.085048
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-Rolling
+#edits: 17174
+Warmup round: 1.701107
+Round 1: 1.657621
+Round 2: 1.677565
+Round 3: 1.674994
+Average time: 1.670060
+Average Building time: 0.001576
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 10)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-SA-DC3
+#edits: 24586
+Warmup round: 2.634205
+Round 1: 2.520866
+Round 2: 2.490759
+Round 3: 2.509363
+Average time: 2.506996
+Average Building time: 0.086340
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-Rolling
+#edits: 24581
+Warmup round: 2.793305
+Round 1: 2.761716
+Round 2: 2.702587
+Round 3: 2.752997
+Average time: 2.739100
+Average Building time: 0.001587
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-B-Rolling
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-SA-DC3
+#edits: 52850
+Warmup round: 5.888145
+Round 1: 5.784007
+Round 2: 5.756292
+Round 3: 5.711749
+Average time: 5.750683
+Average Building time: 0.047773
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-Rolling
+#edits: 52856
+Warmup round: 6.934158
+Round 1: 6.864739
+Round 2: 6.875994
+Round 3: 6.912821
+Average time: 6.884518
+Average Building time: 0.001552
+Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-B-Rolling
+

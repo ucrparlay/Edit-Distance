@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/yliu908/Dev/_Edit/Edit-Distance/suffix_array_sequential.cpp
+suffix_array_sequential.h
+/home/yliu908/Dev/_Edit/Edit-Distance/suffix_array_sequential.h
+algorithm
+-
+array
+-
+vector
+-
+
+/home/yliu908/Dev/_Edit/Edit-Distance/suffix_array_sequential.h
+array
+-
+string
+-
+vector
+-
+

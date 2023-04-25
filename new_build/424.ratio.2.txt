@@ -1,0 +1,87 @@
+n, k, Parlay, HashB, Hash, BHB, BH, SAB, SA, DAC_MM
+
+
+
+
+############################### Synthetic DATA ###############################
+
+
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1)
+
+Test name: BFS-B-Rolling
+#edits: 16055
+Warmup round: 10.397895
+Round 1: 10.385328
+Round 2: 10.243264
+Round 3: 10.242706
+Average time: 10.290433
+Average Building time: 0.000613
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 3)
+
+Test name: BFS-B-Rolling
+#edits: 16323
+Warmup round: 10.652054
+Round 1: 10.522418
+Round 2: 10.530896
+Round 3: 10.476369
+Average time: 10.509894
+Average Building time: 0.000402
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 5)
+
+Test name: BFS-B-Rolling
+#edits: 16589
+Warmup round: 10.915851
+Round 1: 10.895014
+Round 2: 10.857552
+Round 3: 10.940700
+Average time: 10.897755
+Average Building time: 0.000397
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 7)
+
+Test name: BFS-B-Rolling
+#edits: 16781
+Warmup round: 11.084816
+Round 1: 11.055188
+Round 2: 11.064544
+Round 3: 11.141855
+Average time: 11.087196
+Average Building time: 0.000391
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 9)
+
+Test name: BFS-B-Rolling
+#edits: 17012
+Warmup round: 11.379958
+Round 1: 11.330865
+Round 2: 11.352396
+Round 3: 11.326021
+Average time: 11.336427
+Average Building time: 0.000387
+
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 100)
+
+Test name: BFS-B-Rolling
+#edits: 24601
+Warmup round: 20.121433
+Round 1: 20.147830
+Round 2: 20.142787
+Round 3: 20.079686
+Average time: 20.123434
+Average Building time: 0.000393
+
+1000000, 100000, Generating test case... (n: 1000000, k: 100000, alpha: 2, ratio: 1000)
+
+Test name: BFS-B-Rolling
+#edits: 52841
+Warmup round: 49.360554
+Round 1: 49.469645
+Round 2: 49.301233
+Round 3: 49.340224
+Average time: 49.370367
+Average Building time: 0.000383
+

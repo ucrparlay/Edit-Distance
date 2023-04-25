@@ -31,9 +31,6 @@ int EditDistanceRollingHash(const Seq &a, const Seq &b, double *building_tm) {
   // std::cout << "Memory usage before allocation: " << mem_usage << std::endl;
   build_rolling(a, b, table_s1, table_s2);
 
-  // getrusage(RUSAGE_SELF, &usage);
-  // mem_usage = usage.ru_maxrss;
-  // std::cout << "Memory usage after allocation: " << mem_usage << std::endl;
   auto Diag = [&](int i, int j) { return i - j + m; };
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
 

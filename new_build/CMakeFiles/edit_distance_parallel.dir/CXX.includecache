@@ -1131,8 +1131,6 @@ longest_common_prefix.h
 /home/yliu908/Dev/_Edit/Edit-Distance/longest_common_prefix.h
 
 /home/yliu908/Dev/_Edit/Edit-Distance/utils.h
-malloc.h
--
 math.h
 -
 stdint.h

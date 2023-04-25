@@ -1139,8 +1139,6 @@ suffix_array_sequential.h
 /home/yliu908/Dev/_Edit/Edit-Distance/suffix_array_sequential.h
 
 /home/yliu908/Dev/_Edit/Edit-Distance/utils.h
-malloc.h
--
 math.h
 -
 stdint.h

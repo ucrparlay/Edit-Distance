@@ -124,11 +124,7 @@ void parse_string_line(const std::string file_name,
 // parlay::sequence variable, blank lines and
 // white spaces will be omitted
 // Usage: `parse_text_file_with_blank(file_path, destination_variables)`
-<<<<<<< HEAD
 template <typename T>
-=======
-template<typename T>
->>>>>>> cf8b1816a2cd43c5c6de7a3764204cd560128de0
 void parse_text_file_with_blank(const std::string filename,
                                 parlay::sequence<T>& parser_var) {
   char ch;

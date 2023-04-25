@@ -1177,8 +1177,6 @@ minimum_edit_distance.h
 /home/yliu908/Dev/_Edit/Edit-Distance/minimum_edit_distance.h
 
 /home/yliu908/Dev/_Edit/Edit-Distance/utils.h
-malloc.h
--
 math.h
 -
 stdint.h

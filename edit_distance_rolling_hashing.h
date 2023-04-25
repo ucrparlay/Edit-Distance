@@ -1,5 +1,5 @@
 #include "rolling_hashing.h"
-using hash_r_T = int32_t;
+// using hash_r_T = int32_t;
 
 // Returns an 32-bit integer of edit distance for two sequences A and B
 // using bfs and hashing table query for lcp, in parallel

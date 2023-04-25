@@ -8,7 +8,7 @@
 #ifndef utils_h
 #define utils_h
 
-#include <malloc.h>
+// #include <malloc.h>
 #include <math.h>
 #include <stdint.h>
 #include <sys/resource.h>
@@ -124,8 +124,9 @@ void parse_string_line(const std::string file_name,
 // parlay::sequence variable, blank lines and
 // white spaces will be omitted
 // Usage: `parse_text_file_with_blank(file_path, destination_variables)`
+template<typename T>
 void parse_text_file_with_blank(const std::string filename,
-                                parlay::sequence<unsigned char>& parser_var) {
+                                parlay::sequence<T>& parser_var) {
   char ch;
   std::fstream fin(filename, std::fstream::in);
   while (fin >> std::noskipws >> ch) {

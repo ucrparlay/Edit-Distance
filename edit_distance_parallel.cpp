@@ -13,12 +13,16 @@
 #include "suffix_array_parallel.h"
 #include "utils.h"
 
+#define COMPUTE_AVERAGE_LCP
+
 size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
                       const parlay::sequence<uint32_t>& b, double* building_tm,
                       bool use_DC3) {
   Timer tmr;
-  uint64_t l_total = 0;
-  uint64_t cnt = 0;
+#ifdef COMPUTE_AVERAGE_LCP
+  std::atomic_uint64_t lcp_total = 0;
+  std::atomic_uint64_t lcp_cnt = 0;
+#endif
   int n = a.size(), m = b.size();
   auto c = parlay::sequence<uint32_t>(n + m);
   parlay::parallel_for(0, n, [&](int i) { c[i] = a[i]; });
@@ -42,7 +46,6 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
     }
     int l = rank[i], r = rank[j + n];
     if (l > r) std::swap(l, r);
-    assert(l < r);
     int id = rmq.query(l + 1, r);
     return std::min(lcp[id], (unsigned int)n - i);
   };
@@ -53,8 +56,8 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
 
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
   max_row[Diag(0, 0)] = GetLcp(0, 0);
-  l_total += GetLcp(0, 0);
-  cnt++;
+  lcp_total += GetLcp(0, 0);
+  lcp_cnt++;
   int k = 0;
   for (;;) {
     if (max_row[Diag(n, m)] == n) break;  // find path
@@ -70,8 +73,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         } else {
           int _lcp = GetLcp(i + 1, j + 1);
           t = i + 1 + _lcp;
-          l_total += _lcp;
-          cnt++;
+#ifdef COMPUTE_AVERAGE_LCP
+          lcp_total += _lcp;
+          lcp_cnt++;
+#endif
         }
       }
       if (id > 0 && max_row[id - 1] != -1) {
@@ -82,8 +87,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         } else {
           int _lcp_2 = GetLcp(i + 1, j);
           t = std::max(t, i + 1 + _lcp_2);
-          l_total += _lcp_2;
-          cnt++;
+#ifdef COMPUTE_AVERAGE_LCP
+          lcp_total += _lcp_2;
+          lcp_cnt++;
+#endif
         }
       }
       if (id < n + m && max_row[id + 1] != -1) {
@@ -94,8 +101,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
         } else {
           int _lcp_3 = GetLcp(i, j + 1);
           t = std::max(t, i + _lcp_3);
-          l_total += _lcp_3;
-          cnt++;
+#ifdef COMPUTE_AVERAGE_LCP
+          lcp_total += _lcp_3;
+          lcp_cnt++;
+#endif
         }
       }
       assert(t <= n);
@@ -104,8 +113,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
     parlay::parallel_for(l, r + 1,
                          [&](int id) { max_row[id] = std::min(temp[id], id); });
   }
-  std::cout << "Lcp total: " << l_total << std::endl;
-  std::cout << "cnt: " << cnt << std::endl;
-  std::cout << "average: " << (double)(l_total) / cnt << std::endl;
+#ifdef COMPUTE_AVERAGE_LCP
+  std::cout << "Lcp total: " << lcp_total << std::endl;
+  std::cout << "lcp_cnt: " << lcp_cnt << std::endl;
+  std::cout << "average: " << (double)(lcp_total) / lcp_cnt << std::endl;
+#endif
   return k;
 }

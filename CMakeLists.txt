@@ -40,6 +40,9 @@ target_link_libraries(test_framework PUBLIC edit_distance_parallel parlay)
 add_executable(test_framework_real test_framework_real.cpp)
 target_link_libraries(test_framework_real PUBLIC edit_distance_parallel parlay)
 
+add_executable(test_framework_ratio test_framework_ratio.cpp)
+target_link_libraries(test_framework_ratio PUBLIC edit_distance_parallel parlay)
+
 add_library(edit_distance_parallel edit_distance_parallel.cpp)
 target_link_libraries(edit_distance_parallel PUBLIC parlay)
 

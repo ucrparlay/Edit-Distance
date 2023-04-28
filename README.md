@@ -9,11 +9,8 @@ Requirements
 
 Getting Code
 --------
-Clone the repository with submodules
-```bash
-git clone --recurse-submodules https://github.com/ucrparlay/Edit-Distance.git
-cd Edit-Distance
-```
+Download the repository on Anonymous GitHub
+
 Compilation
 --------
 ```bash

@@ -13,7 +13,7 @@
 #include "suffix_array_parallel.h"
 #include "utils.h"
 
-#define COMPUTE_AVERAGE_LCP
+// #define COMPUTE_AVERAGE_LCP
 
 size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
                       const parlay::sequence<uint32_t>& b, double* building_tm,

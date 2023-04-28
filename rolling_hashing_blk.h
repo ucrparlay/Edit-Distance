@@ -155,10 +155,13 @@ int query_rolling_blk(const parlay::sequence<T> &s1,
                       const parlay::sequence<hash_r_b_T> &table2, size_t i,
                       size_t j) {
   if ((size_t)i >= s1.size() || (size_t)j >= s2.size()) return 0;
-  if ((hash_r_b_T)s1[i] != (hash_r_b_T)s2[j]) return 0;
-  if ((hash_r_b_T)s1[i + 1] != (hash_r_b_T)s2[j + 1]) return 1;
-  if ((hash_r_b_T)s1[i + 2] != (hash_r_b_T)s2[j + 2]) return 2;
-  if ((hash_r_b_T)s1[i + 3] != (hash_r_b_T)s2[j + 3]) return 3;
+  // if ((hash_r_b_T)s1[i] != (hash_r_b_T)s2[j]) return 0;
+  // if ((hash_r_b_T)s1[i + 1] != (hash_r_b_T)s2[j + 1]) return 1;
+  // if ((hash_r_b_T)s1[i + 2] != (hash_r_b_T)s2[j + 2]) return 2;
+  // if ((hash_r_b_T)s1[i + 3] != (hash_r_b_T)s2[j + 3]) return 3;
+  for (uint32_t k = 0; k < 8; k++) {
+    if ((hash_r_b_T)s1[i + k] != (hash_r_b_T)s2[j + k]) return k;
+  }
 
   size_t try_r = 1;
   size_t r = std::min(s1.size() - i, s2.size() - j);

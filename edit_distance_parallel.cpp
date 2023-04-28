@@ -56,8 +56,10 @@ size_t EditDistanceSA(const parlay::sequence<uint32_t>& a,
 
   parlay::sequence<int> max_row(n + m + 1, -1), temp(n + m + 1);
   max_row[Diag(0, 0)] = GetLcp(0, 0);
+#ifdef COMPUTE_AVERAGE_LCP
   lcp_total += GetLcp(0, 0);
   lcp_cnt++;
+#endif
   int k = 0;
   for (;;) {
     if (max_row[Diag(n, m)] == n) break;  // find path

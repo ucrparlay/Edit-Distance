@@ -1,1 +1,0 @@
-/opt/rh/gcc-toolset-12/root/usr/bin/c++ -g CMakeFiles/suffix_array_test.dir/suffix_array_test.cpp.o -o suffix_array_test  libsuffix_array_sequential.a -lpthread 

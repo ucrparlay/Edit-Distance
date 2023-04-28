@@ -1,2 +1,0 @@
-/opt/rh/gcc-toolset-12/root/usr/bin/ar qc libsuffix_array_sequential.a CMakeFiles/suffix_array_sequential.dir/suffix_array_sequential.cpp.o
-/opt/rh/gcc-toolset-12/root/usr/bin/ranlib libsuffix_array_sequential.a

@@ -4,12 +4,14 @@ This repository contains code for our paper "Efficient Parallel Output-Sensitive
 Requirements
 --------
 + CMake >= 3.15 
-+ g++ or clang with C++17 features support (Tested with g++ 12.1.1 and clang 14.0.6) on Linux machines.
++ g++ or clang with C++17 features support (tested with g++ 12.1.1 and clang 14.0.6) on Linux machines.
 + We use [ParlayLib](https://github.com/cmuparlay/parlaylib) to support fork-join parallelism and some parallel primitives. It is provided as a submodule in our repository. 
 
 Getting Code
 --------
-Download the repository on Anonymous GitHub
+```bash
+git clone --recurse-submodules https://github.com/ucrparlay/Edit-Distance.git
+```
 
 Compilation
 --------

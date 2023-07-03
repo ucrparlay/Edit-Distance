@@ -52,4 +52,14 @@ For real-world dataset:
 
 Reference
 --------
-Xiangyun Ding, Xiaojun Dong, Yan Gu, Youzhe Liu and Yihan Sun. Efficient Parallel Output-Sensitive Edit Distance. In submission.
+Xiangyun Ding, Xiaojun Dong, Yan Gu, Youzhe Liu and Yihan Sun. [*Efficient Parallel Output-Sensitive Edit Distance*](https://arxiv.org/abs/2306.17461). To appear at European Symposium on Algorithms (ESA), 2023
+
+If you use our code, please cite our paper:
+```
+@inproceedings{ding2023efficient,
+  author    = {Ding, Xiangyun and Dong, Xiaojun and Gu, Yan and Sun, Yihan and Liu, Youzhe},
+  title     = {Efficient Parallel Output-Sensitive Edit Distance},
+  booktitle = {European Symposium on Algorithms (ESA)},
+  year      = {2023}
+}
+```
